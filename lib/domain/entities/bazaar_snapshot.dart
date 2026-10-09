@@ -1,4 +1,4 @@
-import 'bazaar_item.dart';
+import 'package:hypixel_tracker/domain/entities/bazaar_item.dart';
 
 class BazaarSnapshot {
   final List<BazaarItem> items;

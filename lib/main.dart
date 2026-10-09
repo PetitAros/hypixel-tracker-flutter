@@ -33,6 +33,7 @@ Future<void> main() async {
     local: BazaarLocalDatasource(
       itemsBox: await Hive.openBox<BazaarItemModel>(HiveBoxes.bazaar),
       namesBox: await Hive.openBox<String>(HiveBoxes.itemNames),
+      collectionsBox: await Hive.openBox<String>(HiveBoxes.collections),
       metaBox: metaBox,
     ),
   );

@@ -64,6 +64,19 @@ class HypixelRemoteDatasource {
     });
   }
 
+  /// The collection group of each collection item, e.g. "COAL" -> "MINING".
+  Future<Map<String, String>> getCollectionGroups() {
+    return _get('resources/skyblock/collections', 'collections', (body) {
+      final groups = body['collections'] as Map<String, dynamic>;
+
+      return {
+        for (final MapEntry(key: group, :value) in groups.entries)
+          for (final itemId in (value['items'] as Map<String, dynamic>).keys)
+            itemId: group,
+      };
+    });
+  }
+
   /// Official display names by item id, e.g. "ENCHANTED_COAL" -> "Enchanted Coal".
   Future<Map<String, String>> getItemNames() {
     return _get('resources/skyblock/items', 'items', (body) {
