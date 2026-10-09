@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import '../../domain/entities/bazaar_snapshot.dart';
-import '../../domain/repositories/bazaar_repository.dart';
+import 'package:hypixel_tracker/domain/entities/bazaar_snapshot.dart';
+import 'package:hypixel_tracker/domain/repositories/bazaar_repository.dart';
 
 sealed class BazaarState {
   const BazaarState();

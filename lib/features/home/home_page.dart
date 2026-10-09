@@ -42,7 +42,10 @@ class _HomePageState extends State<HomePage> {
             repository: widget.auctionRepository,
             marketRepository: widget.marketRepository,
           ),
-          BazaarPage(repository: widget.bazaarRepository),
+          BazaarPage(
+            repository: widget.bazaarRepository,
+            marketRepository: widget.marketRepository,
+          ),
         ],
       ),
       bottomNavigationBar: _FloatingNavigationBar(
