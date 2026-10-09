@@ -10,6 +10,15 @@ class Formatters {
     return value is int ? '$value' : value.toStringAsFixed(1);
   }
 
+  // "2d 4h", "3h 12m", "12m", "Ended"
+  static String timeLeft(Duration value) {
+    if (value <= Duration.zero) return 'Ended';
+    if (value.inDays > 0) return '${value.inDays}d ${value.inHours % 24}h';
+    if (value.inHours > 0) return '${value.inHours}h ${value.inMinutes % 60}m';
+    if (value.inMinutes > 0) return '${value.inMinutes}m';
+    return '<1m';
+  }
+
   // "09/10 14:05"
   static String dateTime(DateTime value) {
     String two(int n) => n.toString().padLeft(2, '0');

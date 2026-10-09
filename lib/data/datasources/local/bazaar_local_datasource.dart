@@ -1,19 +1,22 @@
 import 'package:hive_ce/hive.dart';
-import '../../models/bazaar_item_model.dart';
+import 'package:hypixel_tracker/data/models/bazaar_item_model.dart';
 
 class BazaarLocalDatasource {
   final Box<BazaarItemModel> itemsBox;
   final Box<String> namesBox;
+  final Box<String> collectionsBox;
   final Box<dynamic> metaBox;
 
   BazaarLocalDatasource({
     required this.itemsBox,
     required this.namesBox,
+    required this.collectionsBox,
     required this.metaBox,
   });
 
   static const _lastUpdatedKey = 'bazaar_last_updated';
   static const _namesUpdatedKey = 'item_names_last_updated';
+  static const _collectionsUpdatedKey = 'collections_last_updated';
 
   List<BazaarItemModel> read() => itemsBox.values.toList();
 
@@ -23,7 +26,9 @@ class BazaarLocalDatasource {
     // Write the new items before dropping the stale ones: if the app is killed
     // mid-save the box holds a mix of old and new items, never nothing.
     final fresh = {for (final item in items) item.productId: item};
-    final stale = itemsBox.keys.where((key) => !fresh.containsKey(key)).toList();
+    final stale = itemsBox.keys
+        .where((key) => !fresh.containsKey(key))
+        .toList();
 
     await itemsBox.putAll(fresh);
     await itemsBox.deleteAll(stale);
@@ -38,6 +43,21 @@ class BazaarLocalDatasource {
   Future<void> saveNames(Map<String, String> names, DateTime fetchedAt) async {
     await namesBox.putAll(names);
     await metaBox.put(_namesUpdatedKey, fetchedAt.millisecondsSinceEpoch);
+  }
+
+  /// Collection group by item id, from the Hypixel collections resource.
+  Map<String, String> readCollections() {
+    return collectionsBox.toMap().cast<String, String>();
+  }
+
+  DateTime? get collectionsUpdated => _readDate(_collectionsUpdatedKey);
+
+  Future<void> saveCollections(
+    Map<String, String> collections,
+    DateTime fetchedAt,
+  ) async {
+    await collectionsBox.putAll(collections);
+    await metaBox.put(_collectionsUpdatedKey, fetchedAt.millisecondsSinceEpoch);
   }
 
   DateTime? _readDate(String key) {

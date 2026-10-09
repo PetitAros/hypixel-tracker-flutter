@@ -23,6 +23,15 @@ class AppColors {
   static const onBackground = Color(0xFFEDEDED);
   static const onSurfaceMuted = Color(0xFFA0A0A0);
 
+  // SkyBlock rarities (Minecraft chat colours)
+  static const rarityCommon = Color(0xFFFFFFFF);
+  static const rarityUncommon = Color(0xFF55FF55);
+  static const rarityRare = Color(0xFF5555FF);
+  static const rarityEpic = Color(0xFFAA00AA);
+  static const rarityLegendary = Color(0xFFFFAA00);
+  static const rarityMythic = Color(0xFFFF55FF);
+  static const rarityDivine = Color(0xFF55FFFF);
+  static const raritySpecial = Color(0xFFFF5555);
 }
 
 class AppSpacing {
@@ -42,6 +51,7 @@ class AppRadius {
   static const sm = BorderRadius.all(Radius.circular(6));
   static const md = BorderRadius.all(Radius.circular(12));
   static const lg = BorderRadius.all(Radius.circular(20));
+  static const pill = BorderRadius.all(Radius.circular(999));
 }
 
 // ---------------------------------------------------------------------------
@@ -52,7 +62,8 @@ class AppRadius {
 class AppTextStyles {
   AppTextStyles._();
 
-  static const _fontFamily = 'Inter'; // swap for a Minecraft-y display font if desired
+  static const _fontFamily =
+      'Inter'; // swap for a Minecraft-y display font if desired
 
   static const TextTheme textTheme = TextTheme(
     headlineLarge: TextStyle(

@@ -1,4 +1,4 @@
-import '../entities/bazaar_snapshot.dart';
+import 'package:hypixel_tracker/domain/entities/bazaar_snapshot.dart';
 
 abstract interface class BazaarRepository {
   /// The last bazaar saved on disk, or null when nothing was saved yet.
