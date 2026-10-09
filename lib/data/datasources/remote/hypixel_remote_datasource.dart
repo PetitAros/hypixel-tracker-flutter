@@ -1,6 +1,8 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
-import '../../models/bazaar_item_model.dart';
+import 'package:hypixel_tracker/data/models/auction_model.dart';
+import 'package:hypixel_tracker/data/models/bazaar_item_model.dart';
 
 class HypixelApiException implements Exception {
   final String message;
@@ -9,6 +11,19 @@ class HypixelApiException implements Exception {
 
   @override
   String toString() => 'HypixelApiException: $message';
+}
+
+// One page of the auction house, with what the API says about the whole list.
+class AuctionsResponse {
+  final List<AuctionModel> auctions;
+  final int page;
+  final int totalPages;
+
+  const AuctionsResponse({
+    required this.auctions,
+    required this.page,
+    required this.totalPages,
+  });
 }
 
 // Keyless Hypixel endpoints only (bazaar, auctions, resources).
@@ -31,6 +46,21 @@ class HypixelRemoteDatasource {
       return products.values
           .map((product) => BazaarItemModel.fromJson(product))
           .toList();
+    });
+  }
+
+  /// Auctions come in pages of about 1,000; [page] starts at 0.
+  Future<AuctionsResponse> getAuctions({int page = 0}) {
+    return _get('skyblock/auctions?page=$page', 'auctions', (body) {
+      final auctions = body['auctions'] as List<dynamic>;
+
+      return AuctionsResponse(
+        auctions: auctions
+            .map((auction) => AuctionModel.fromJson(auction))
+            .toList(),
+        page: body['page'] as int,
+        totalPages: body['totalPages'] as int,
+      );
     });
   }
 
