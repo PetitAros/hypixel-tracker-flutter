@@ -19,6 +19,15 @@ class Formatters {
     return '<1m';
   }
 
+  // "b876ec32e396476ba1158438d83c67d4" -> "b876ec32-e396-476b-a115-8438d83c67d4"
+  // Mojang sends UUIDs without dashes; anything else is returned unchanged.
+  static String uuid(String value) {
+    if (value.length != 32) return value;
+    return '${value.substring(0, 8)}-${value.substring(8, 12)}-'
+        '${value.substring(12, 16)}-${value.substring(16, 20)}-'
+        '${value.substring(20)}';
+  }
+
   // "09/10 14:05"
   static String dateTime(DateTime value) {
     String two(int n) => n.toString().padLeft(2, '0');

@@ -72,7 +72,7 @@ class _AuctionsPageState extends State<AuctionsPage> {
 
     final page = state.page;
     final updated = Formatters.dateTime(page.lastUpdated);
-    final pages = 'page ${page.page + 1}/${page.totalPages}';
+    final pages = 'page ${state.loadedPages}/${page.totalPages}';
 
     return switch (state.sync) {
       AuctionSync.refreshing => 'Refreshing. Data from $updated, $pages',
@@ -161,12 +161,18 @@ class _AuctionsPageState extends State<AuctionsPage> {
         text: 'Could not load the auctions. Check your connection.',
         onRetry: _controller.load,
       ),
-      AuctionData(:final page) => Builder(
+      AuctionData() => Builder(
         builder: (context) => RefreshIndicator(
           // Start the spinner below the app bar, not behind it.
           edgeOffset: MediaQuery.paddingOf(context).top,
           onRefresh: _controller.load,
-          child: AuctionList(page: page),
+          child: AuctionList(
+            auctions: state.visible,
+            hasMore: state.hasMore,
+            loadMoreFailed: state.loadMoreFailed,
+            onLoadMore: _controller.loadMore,
+            onRetry: _controller.retryLoadMore,
+          ),
         ),
       ),
     };

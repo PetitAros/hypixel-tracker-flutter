@@ -13,6 +13,7 @@ import 'package:hypixel_tracker/data/models/auction_model.dart';
 import 'package:hypixel_tracker/data/models/bazaar_item_model.dart';
 import 'package:hypixel_tracker/data/repositories/auction_repository_impl.dart';
 import 'package:hypixel_tracker/data/repositories/bazaar_repository_impl.dart';
+import 'package:hypixel_tracker/data/repositories/fake_profile_repository.dart';
 import 'package:hypixel_tracker/data/repositories/market_repository_impl.dart';
 import 'package:hypixel_tracker/data/repositories/player_repository_impl.dart';
 import 'package:hypixel_tracker/domain/repositories/auction_repository.dart';
@@ -20,6 +21,7 @@ import 'package:hypixel_tracker/domain/repositories/bazaar_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/market_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/player_repository.dart';
 import 'package:hypixel_tracker/features/home/home_page.dart';
+import 'package:hypixel_tracker/features/profile/profile_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,12 +59,17 @@ Future<void> main() async {
     remote: MojangRemoteDatasource(client: client),
   );
 
+  // App-wide state: the followed player and their SkyBlock progress.
+  // Fake data until the Hypixel key is there.
+  final profileController = ProfileController(FakeProfileRepository());
+
   runApp(
     MyApp(
       bazaarRepository: bazaarRepository,
       auctionRepository: auctionRepository,
       marketRepository: marketRepository,
       playerRepository: playerRepository,
+      profileController: profileController,
     ),
   );
 }
@@ -74,23 +81,29 @@ class MyApp extends StatelessWidget {
     required this.auctionRepository,
     required this.marketRepository,
     required this.playerRepository,
+    required this.profileController,
   });
 
   final BazaarRepository bazaarRepository;
   final AuctionRepository auctionRepository;
   final MarketRepository marketRepository;
   final PlayerRepository playerRepository;
+  final ProfileController profileController;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hypixel Tracker',
-      theme: AppTheme.dark,
-      home: HomePage(
-        auctionRepository: auctionRepository,
-        bazaarRepository: bazaarRepository,
-        marketRepository: marketRepository,
-        playerRepository: playerRepository,
+    // Above MaterialApp, so every page and pushed route can read it.
+    return ProfileScope(
+      controller: profileController,
+      child: MaterialApp(
+        title: 'Hypixel Tracker',
+        theme: AppTheme.dark,
+        home: HomePage(
+          auctionRepository: auctionRepository,
+          bazaarRepository: bazaarRepository,
+          marketRepository: marketRepository,
+          playerRepository: playerRepository,
+        ),
       ),
     );
   }
