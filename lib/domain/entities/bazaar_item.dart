@@ -18,4 +18,11 @@ class BazaarItem {
     required this.sellPrice,
     required this.weeklyVolume,
   });
+
+  /// What separates the price to buy now from the price to sell now.
+  double get spread => buyPrice - sellPrice;
+
+  /// The spread as a share of the sell price: what a flip would earn
+  /// (buy with an order at the sell price, sell with one at the buy price).
+  double get margin => sellPrice <= 0 ? 0 : spread / sellPrice;
 }

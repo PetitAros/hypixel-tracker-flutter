@@ -3,6 +3,7 @@ import 'package:hypixel_tracker/core/theme/app_theme.dart';
 import 'package:hypixel_tracker/core/utils/formatters.dart';
 import 'package:hypixel_tracker/core/widgets/async_view.dart';
 import 'package:hypixel_tracker/core/widgets/coflnet_credit.dart';
+import 'package:hypixel_tracker/core/widgets/countdown.dart';
 import 'package:hypixel_tracker/core/widgets/fading_app_bar.dart';
 import 'package:hypixel_tracker/domain/entities/item_auction.dart';
 import 'package:hypixel_tracker/domain/entities/item_summary.dart';
@@ -60,10 +61,6 @@ class _ItemAuctionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final timeLeft = Formatters.timeLeft(
-      auction.endsAt.difference(DateTime.now()),
-    );
-
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -88,7 +85,7 @@ class _ItemAuctionCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: AppSpacing.md),
-            Text(timeLeft, style: textTheme.bodyMedium),
+            Countdown(endsAt: auction.endsAt, style: textTheme.bodyMedium),
           ],
         ),
       ),

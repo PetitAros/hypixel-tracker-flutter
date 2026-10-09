@@ -51,7 +51,7 @@ class AppRadius {
   static const sm = BorderRadius.all(Radius.circular(6));
   static const md = BorderRadius.all(Radius.circular(12));
   static const lg = BorderRadius.all(Radius.circular(20));
-  static const pill = BorderRadius.all(Radius.circular(999));
+  static const xl = BorderRadius.all(Radius.circular(28));
 }
 
 // ---------------------------------------------------------------------------
@@ -137,7 +137,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.surfaceVariant,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.md),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.lg),
         margin: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.sm,
@@ -153,7 +153,7 @@ class AppTheme {
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.sm,
           ),
-          shape: RoundedRectangleBorder(borderRadius: AppRadius.sm),
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.lg),
         ),
       ),
 
@@ -162,7 +162,7 @@ class AppTheme {
         fillColor: AppColors.surfaceVariant,
         contentPadding: const EdgeInsets.all(AppSpacing.md),
         border: OutlineInputBorder(
-          borderRadius: AppRadius.sm,
+          borderRadius: AppRadius.xl,
           borderSide: BorderSide.none,
         ),
         hintStyle: AppTextStyles.textTheme.bodyMedium,

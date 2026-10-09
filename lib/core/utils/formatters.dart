@@ -10,13 +10,33 @@ class Formatters {
     return value is int ? '$value' : value.toStringAsFixed(1);
   }
 
-  // "2d 4h", "3h 12m", "12m", "Ended"
+  // "2d 4h", "3h 12m", "12m", "4m 12s", "42s", "Ended"
   static String timeLeft(Duration value) {
     if (value <= Duration.zero) return 'Ended';
     if (value.inDays > 0) return '${value.inDays}d ${value.inHours % 24}h';
     if (value.inHours > 0) return '${value.inHours}h ${value.inMinutes % 60}m';
-    if (value.inMinutes > 0) return '${value.inMinutes}m';
-    return '<1m';
+    // Seconds only matter in the last minutes.
+    if (value.inMinutes >= 5) return '${value.inMinutes}m';
+    if (value.inMinutes > 0) {
+      return '${value.inMinutes}m ${value.inSeconds % 60}s';
+    }
+    return '${value.inSeconds}s';
+  }
+
+  // 0.038 -> "+3.8%", 12.4 -> "+999%"
+  static String percent(double ratio) {
+    final value = ratio * 100;
+    if (value >= 999) return '+999%';
+    return '${value >= 0 ? '+' : ''}${value.toStringAsFixed(1)}%';
+  }
+
+  // "b876ec32e396476ba1158438d83c67d4" -> "b876ec32-e396-476b-a115-8438d83c67d4"
+  // Mojang sends UUIDs without dashes; anything else is returned unchanged.
+  static String uuid(String value) {
+    if (value.length != 32) return value;
+    return '${value.substring(0, 8)}-${value.substring(8, 12)}-'
+        '${value.substring(12, 16)}-${value.substring(16, 20)}-'
+        '${value.substring(20)}';
   }
 
   // "09/10 14:05"

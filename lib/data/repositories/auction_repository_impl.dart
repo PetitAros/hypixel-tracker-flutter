@@ -11,7 +11,7 @@ class AuctionRepositoryImpl implements AuctionRepository {
 
   AuctionRepositoryImpl({required this.remote, required this.local});
 
-  // Only the first page for the moment.
+  // The first page is the one kept on disk.
   static const _page = 0;
 
   @override
@@ -44,6 +44,19 @@ class AuctionRepositoryImpl implements AuctionRepository {
       page: response.page,
       totalPages: response.totalPages,
       lastUpdated: fetchedAt,
+      fromCache: false,
+    );
+  }
+
+  @override
+  Future<AuctionPage> fetchPage(int page) async {
+    final response = await remote.getAuctions(page: page);
+
+    return AuctionPage(
+      items: _toEntities(response.auctions),
+      page: response.page,
+      totalPages: response.totalPages,
+      lastUpdated: DateTime.now(),
       fromCache: false,
     );
   }

@@ -11,14 +11,30 @@ class BazaarOrder {
   });
 }
 
-// Lowest and highest prices over the last 24 hours.
+// The prices at one moment of the history.
+class BazaarPricePoint {
+  final DateTime time;
+  final double buy;
+  final double sell;
+
+  const BazaarPricePoint({
+    required this.time,
+    required this.buy,
+    required this.sell,
+  });
+}
+
+// The last 24 hours: lowest and highest prices, and the points in between.
 class BazaarDayRange {
+  /// Oldest first.
+  final List<BazaarPricePoint> points;
   final double minBuy;
   final double maxBuy;
   final double minSell;
   final double maxSell;
 
   const BazaarDayRange({
+    required this.points,
     required this.minBuy,
     required this.maxBuy,
     required this.minSell,

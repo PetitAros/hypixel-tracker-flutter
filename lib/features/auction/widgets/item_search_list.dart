@@ -17,18 +17,30 @@ class ItemSearchList extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-
-        return ListTile(
-          leading: ItemIcon(url: item.iconUrl),
-          title: Text(item.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-          subtitle: Text(
-            item.tier.replaceAll('_', ' '),
-            style: TextStyle(color: rarityColor(item.tier)),
-          ),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => onTap(item),
-        );
+        return ItemSearchTile(item: item, onTap: () => onTap(item));
       },
+    );
+  }
+}
+
+// One item of a search: texture, name and rarity.
+class ItemSearchTile extends StatelessWidget {
+  const ItemSearchTile({super.key, required this.item, required this.onTap});
+
+  final ItemSummary item;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: ItemIcon(url: item.iconUrl),
+      title: Text(item.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Text(
+        item.tier.replaceAll('_', ' '),
+        style: TextStyle(color: rarityColor(item.tier)),
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
     );
   }
 }
