@@ -3,42 +3,83 @@ import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:hypixel_tracker/core/theme/app_theme.dart';
 
-import 'core/storage/hive_boxes.dart';
-import 'data/datasources/local/bazaar_local_datasource.dart';
-import 'data/datasources/remote/hypixel_remote_datasource.dart';
-import 'data/models/bazaar_item_model.dart';
-import 'data/repositories/bazaar_repository_impl.dart';
-import 'domain/repositories/bazaar_repository.dart';
-import 'features/bazaar/bazaar_page.dart';
+import 'package:hypixel_tracker/core/storage/hive_boxes.dart';
+import 'package:hypixel_tracker/data/datasources/local/auction_local_datasource.dart';
+import 'package:hypixel_tracker/data/datasources/local/bazaar_local_datasource.dart';
+import 'package:hypixel_tracker/data/datasources/remote/coflnet_remote_datasource.dart';
+import 'package:hypixel_tracker/data/datasources/remote/hypixel_remote_datasource.dart';
+import 'package:hypixel_tracker/data/models/auction_model.dart';
+import 'package:hypixel_tracker/data/models/bazaar_item_model.dart';
+import 'package:hypixel_tracker/data/repositories/auction_repository_impl.dart';
+import 'package:hypixel_tracker/data/repositories/bazaar_repository_impl.dart';
+import 'package:hypixel_tracker/data/repositories/market_repository_impl.dart';
+import 'package:hypixel_tracker/domain/repositories/auction_repository.dart';
+import 'package:hypixel_tracker/domain/repositories/bazaar_repository.dart';
+import 'package:hypixel_tracker/domain/repositories/market_repository.dart';
+import 'package:hypixel_tracker/features/home/home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   Hive.registerAdapter(BazaarItemModelAdapter());
+  Hive.registerAdapter(AuctionModelAdapter());
+
+  final client = http.Client();
+  final remote = HypixelRemoteDatasource(client: client);
+  final metaBox = await Hive.openBox<dynamic>(HiveBoxes.meta);
 
   final bazaarRepository = BazaarRepositoryImpl(
-    remote: HypixelRemoteDatasource(client: http.Client()),
+    remote: remote,
     local: BazaarLocalDatasource(
       itemsBox: await Hive.openBox<BazaarItemModel>(HiveBoxes.bazaar),
       namesBox: await Hive.openBox<String>(HiveBoxes.itemNames),
-      metaBox: await Hive.openBox<dynamic>(HiveBoxes.meta),
+      metaBox: metaBox,
     ),
   );
 
-  runApp(MyApp(bazaarRepository: bazaarRepository));
+  final auctionRepository = AuctionRepositoryImpl(
+    remote: remote,
+    local: AuctionLocalDatasource(
+      auctionsBox: await Hive.openBox<AuctionModel>(HiveBoxes.auctions),
+      metaBox: metaBox,
+    ),
+  );
+
+  final marketRepository = MarketRepositoryImpl(
+    remote: CoflnetRemoteDatasource(client: client),
+  );
+
+  runApp(
+    MyApp(
+      bazaarRepository: bazaarRepository,
+      auctionRepository: auctionRepository,
+      marketRepository: marketRepository,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.bazaarRepository});
+  const MyApp({
+    super.key,
+    required this.bazaarRepository,
+    required this.auctionRepository,
+    required this.marketRepository,
+  });
 
   final BazaarRepository bazaarRepository;
+  final AuctionRepository auctionRepository;
+  final MarketRepository marketRepository;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Hypixel Tracker',
       theme: AppTheme.dark,
-      home: BazaarPage(repository: bazaarRepository),
+      home: HomePage(
+        auctionRepository: auctionRepository,
+        bazaarRepository: bazaarRepository,
+        marketRepository: marketRepository,
+      ),
     );
   }
 }
