@@ -7,6 +7,8 @@ import 'package:hypixel_tracker/core/widgets/fading_app_bar.dart';
 import 'package:hypixel_tracker/domain/entities/bazaar_item.dart';
 import 'package:hypixel_tracker/domain/entities/bazaar_item_detail.dart';
 import 'package:hypixel_tracker/domain/repositories/market_repository.dart';
+import 'package:hypixel_tracker/features/bazaar/widgets/price_chart.dart';
+import 'package:hypixel_tracker/features/bazaar/widgets/price_range_bar.dart';
 
 // Live prices, 24 hour range and order book of one bazaar product.
 class BazaarItemDetailPage extends StatelessWidget {
@@ -67,14 +69,28 @@ class _DetailList extends StatelessWidget {
           rows: [
             ('Buy', Formatters.compact(detail.buyPrice)),
             ('Sell', Formatters.compact(detail.sellPrice)),
+            ('Spread', _spread(detail)),
           ],
         ),
         if (range != null)
-          _Section(
+          _Card(
             title: 'Last 24 hours',
-            rows: [
-              ('Buy', _range(range.minBuy, range.maxBuy)),
-              ('Sell', _range(range.minSell, range.maxSell)),
+            children: [
+              if (range.points.length >= 2) PriceChart(points: range.points),
+              PriceRangeBar(
+                label: 'Buy price today',
+                low: range.minBuy,
+                high: range.maxBuy,
+                current: detail.buyPrice,
+                lowIsGood: true,
+              ),
+              PriceRangeBar(
+                label: 'Sell price today',
+                low: range.minSell,
+                high: range.maxSell,
+                current: detail.sellPrice,
+                lowIsGood: false,
+              ),
             ],
           ),
         _Section(
@@ -94,8 +110,11 @@ class _DetailList extends StatelessWidget {
     );
   }
 
-  static String _range(double low, double high) {
-    return '${Formatters.compact(low)} to ${Formatters.compact(high)}';
+  // "57.5 (+3.8%)": the gap between the two prices and what a flip earns.
+  static String _spread(BazaarItemDetail detail) {
+    final spread = detail.buyPrice - detail.sellPrice;
+    final margin = detail.sellPrice <= 0 ? 0.0 : spread / detail.sellPrice;
+    return '${Formatters.compact(spread)} (${Formatters.percent(margin)})';
   }
 
   static List<(String, String)> _orders(List<BazaarOrder> orders) {
@@ -120,22 +139,45 @@ class _Section extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
+    return _Card(
+      title: title,
+      spacing: AppSpacing.sm,
+      children: [
+        for (final (label, value) in rows)
+          Row(
+            children: [
+              Expanded(child: Text(label, style: textTheme.bodyMedium)),
+              Text(value, style: textTheme.bodyLarge),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+// A titled card around any content.
+class _Card extends StatelessWidget {
+  const _Card({
+    required this.title,
+    required this.children,
+    this.spacing = AppSpacing.md,
+  });
+
+  final String title;
+  final List<Widget> children;
+  final double spacing;
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: spacing,
           children: [
-            Text(title, style: textTheme.titleMedium),
-            for (final (label, value) in rows) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                children: [
-                  Expanded(child: Text(label, style: textTheme.bodyMedium)),
-                  Text(value, style: textTheme.bodyLarge),
-                ],
-              ),
-            ],
+            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            ...children,
           ],
         ),
       ),

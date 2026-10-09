@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:hypixel_tracker/domain/entities/player.dart';
 import 'package:hypixel_tracker/domain/entities/player_profiles.dart';
+import 'package:hypixel_tracker/domain/repositories/player_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/profile_repository.dart';
 
 sealed class ProfileState {
@@ -35,16 +36,25 @@ class ProfileFailed extends ProfileState {
 // ProfileScope, so any screen can read it.
 class ProfileController extends ChangeNotifier {
   final ProfileRepository _repository;
+  final PlayerRepository _players;
 
-  ProfileController(this._repository);
+  ProfileController(this._repository, this._players);
 
   ProfileState _state = const ProfileNone();
   ProfileState get state => _state;
 
   int _requestId = 0;
 
+  /// Reopens the player followed when the app was last used, if any.
+  void restore() {
+    final player = _players.readFollowed();
+    if (player != null) select(player);
+  }
+
   /// Makes [player] the followed player and loads their progress.
   Future<void> select(Player player) async {
+    _players.saveFollowed(player);
+
     // A late response must never overwrite a newer one.
     final requestId = ++_requestId;
     _emit(ProfileLoading(player));
@@ -61,6 +71,7 @@ class ProfileController extends ChangeNotifier {
 
   /// Goes back to no player chosen.
   void clear() {
+    _players.saveFollowed(null);
     _requestId++;
     _emit(const ProfileNone());
   }

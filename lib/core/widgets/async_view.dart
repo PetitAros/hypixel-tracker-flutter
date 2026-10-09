@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hypixel_tracker/core/widgets/skeleton.dart';
 import 'package:hypixel_tracker/core/widgets/state_message.dart';
 
 // Loads once and shows the four states: loading, data, empty, error.
@@ -47,7 +48,7 @@ class _AsyncViewState<T> extends State<AsyncView<T>> {
         final data = snapshot.data;
 
         if (snapshot.connectionState != ConnectionState.done && data == null) {
-          return const Center(child: CircularProgressIndicator());
+          return const SkeletonList();
         }
         if (snapshot.hasError || data == null) {
           return StateMessage(text: widget.errorText, onRetry: _reload);

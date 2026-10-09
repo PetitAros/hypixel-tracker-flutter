@@ -10,6 +10,9 @@ class BazaarItemCard extends StatelessWidget {
   final BazaarItem item;
   final VoidCallback onTap;
 
+  // From this share of the sell price, the spread is worth a flip.
+  static const _goodMargin = 0.05;
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -36,9 +39,25 @@ class BazaarItemCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Weekly volume ${Formatters.compact(item.weeklyVolume)}',
+                    Text.rich(
+                      TextSpan(
+                        text:
+                            'Volume ${Formatters.compact(item.weeklyVolume)}'
+                            '  ·  Margin ',
+                        children: [
+                          TextSpan(
+                            text: Formatters.percent(item.margin),
+                            style: TextStyle(
+                              color: item.margin >= _goodMargin
+                                  ? AppColors.success
+                                  : null,
+                            ),
+                          ),
+                        ],
+                      ),
                       style: textTheme.bodyMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

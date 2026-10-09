@@ -6,6 +6,7 @@ import 'package:hypixel_tracker/core/theme/app_theme.dart';
 import 'package:hypixel_tracker/core/storage/hive_boxes.dart';
 import 'package:hypixel_tracker/data/datasources/local/auction_local_datasource.dart';
 import 'package:hypixel_tracker/data/datasources/local/bazaar_local_datasource.dart';
+import 'package:hypixel_tracker/data/datasources/local/preferences_local_datasource.dart';
 import 'package:hypixel_tracker/data/datasources/remote/coflnet_remote_datasource.dart';
 import 'package:hypixel_tracker/data/datasources/remote/hypixel_remote_datasource.dart';
 import 'package:hypixel_tracker/data/datasources/remote/mojang_remote_datasource.dart';
@@ -51,17 +52,24 @@ Future<void> main() async {
     ),
   );
 
+  final preferences = PreferencesLocalDatasource(metaBox: metaBox);
+
   final marketRepository = MarketRepositoryImpl(
     remote: CoflnetRemoteDatasource(client: client),
+    local: preferences,
   );
 
   final playerRepository = PlayerRepositoryImpl(
     remote: MojangRemoteDatasource(client: client),
+    local: preferences,
   );
 
   // App-wide state: the followed player and their SkyBlock progress.
   // Fake data until the Hypixel key is there.
-  final profileController = ProfileController(FakeProfileRepository());
+  final profileController = ProfileController(
+    FakeProfileRepository(),
+    playerRepository,
+  )..restore();
 
   runApp(
     MyApp(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hypixel_tracker/core/theme/app_theme.dart';
 import 'package:hypixel_tracker/core/widgets/coflnet_credit.dart';
 import 'package:hypixel_tracker/core/widgets/fading_app_bar.dart';
+import 'package:hypixel_tracker/core/widgets/skeleton.dart';
 import 'package:hypixel_tracker/core/widgets/state_message.dart';
 import 'package:hypixel_tracker/domain/entities/bazaar_category.dart';
 import 'package:hypixel_tracker/domain/repositories/bazaar_repository.dart';
@@ -71,7 +72,7 @@ class _BazaarPageState extends State<BazaarPage> {
             actions: const [CoflnetCreditButton()],
           ),
           body: switch (state) {
-            BazaarLoading() => const Center(child: CircularProgressIndicator()),
+            BazaarLoading() => const SkeletonList(columns: 2),
             BazaarEmpty() => const StateMessage(
               text: 'No bazaar items to show.',
             ),

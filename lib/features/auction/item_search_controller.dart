@@ -24,7 +24,9 @@ class ItemSearchResults extends ItemSearchState {
 }
 
 class ItemSearchEmpty extends ItemSearchState {
-  const ItemSearchEmpty();
+  final String query;
+
+  const ItemSearchEmpty(this.query);
 }
 
 class ItemSearchError extends ItemSearchState {
@@ -76,7 +78,7 @@ class ItemSearchController extends ChangeNotifier {
     try {
       final items = await _repository.searchItems(_query);
       if (requestId != _requestId) return;
-      _emit(items.isEmpty ? const ItemSearchEmpty() : ItemSearchResults(items));
+      _emit(items.isEmpty ? ItemSearchEmpty(_query) : ItemSearchResults(items));
     } catch (_) {
       if (requestId != _requestId) return;
       _emit(const ItemSearchError());

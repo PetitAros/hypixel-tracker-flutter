@@ -69,6 +69,26 @@ class CoflnetRemoteDatasource {
     });
   }
 
+  /// The item sold by one auction, found from the auction id.
+  Future<ItemSummary> getAuctionItem(String auctionId) {
+    final path = 'auction/${Uri.encodeComponent(auctionId)}';
+
+    return _get(path, 'auction', (body) {
+      if (body == null) {
+        throw const CoflnetApiException('Unknown auction');
+      }
+
+      final tag = body['tag'] as String;
+      final tier = body['tier'];
+      return ItemSummary(
+        id: tag,
+        name: body['itemName'] as String? ?? tag,
+        tier: tier is String ? tier : 'UNKNOWN',
+        iconUrl: iconUrl(tag),
+      );
+    });
+  }
+
   Future<BazaarItemDetail> getBazaarSnapshot(String itemTag) {
     final path = 'bazaar/${Uri.encodeComponent(itemTag)}/snapshot';
 
@@ -118,6 +138,16 @@ class CoflnetRemoteDatasource {
       }
 
       return BazaarDayRange(
+        // The API sends the newest point first.
+        points: [
+          for (final point in points.reversed)
+            if (point['buy'] != null && point['sell'] != null)
+              BazaarPricePoint(
+                time: _parseUtc(point['timestamp'] as String),
+                buy: (point['buy'] as num).toDouble(),
+                sell: (point['sell'] as num).toDouble(),
+              ),
+        ],
         minBuy: minBuy,
         maxBuy: maxBuy,
         minSell: minSell,

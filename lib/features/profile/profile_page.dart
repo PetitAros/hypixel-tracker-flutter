@@ -4,6 +4,7 @@ import 'package:hypixel_tracker/core/theme/app_theme.dart';
 import 'package:hypixel_tracker/core/utils/formatters.dart';
 import 'package:hypixel_tracker/core/widgets/coflnet_credit.dart';
 import 'package:hypixel_tracker/core/widgets/fading_app_bar.dart';
+import 'package:hypixel_tracker/core/widgets/skeleton.dart';
 import 'package:hypixel_tracker/core/widgets/state_message.dart';
 import 'package:hypixel_tracker/domain/entities/player.dart';
 import 'package:hypixel_tracker/domain/repositories/player_repository.dart';
@@ -32,7 +33,7 @@ class ProfilePage extends StatelessWidget {
       ProfileLoading(:final player) => _FollowedPlayerScaffold(
         player: player,
         onChange: profile.clear,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const SkeletonList(itemCount: 5, itemHeight: 120),
       ),
       ProfileFailed(:final player) => _FollowedPlayerScaffold(
         player: player,
@@ -136,8 +137,9 @@ class _PlayerSearchState extends State<_PlayerSearch> {
           PlayerSearchIdle() => const StateMessage(
             text: 'Enter a Minecraft username to find a player.',
           ),
-          PlayerSearchLoading() => const Center(
-            child: CircularProgressIndicator(),
+          PlayerSearchLoading() => const SkeletonList(
+            itemCount: 1,
+            itemHeight: 96,
           ),
           PlayerSearchNotFound(:final name) => StateMessage(
             text: 'No player is named "$name".',
