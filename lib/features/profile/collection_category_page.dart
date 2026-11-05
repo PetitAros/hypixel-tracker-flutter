@@ -20,9 +20,6 @@ class CollectionCategoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Starts below the app bar and ends above the navigation bar.
-    final inset = MediaQuery.paddingOf(context);
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: FadingAppBar(
@@ -31,26 +28,42 @@ class CollectionCategoryPage extends StatelessWidget {
         // The collection textures come from SkyCofl.
         actions: const [CoflnetCreditButton()],
       ),
-      body: ListView(
-        padding: EdgeInsets.only(
-          top: inset.top + AppSpacing.sm,
-          bottom: inset.bottom + AppSpacing.sm,
-        ),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                spacing: AppSpacing.md,
-                children: [
-                  for (final collection in collections)
-                    CollectionRow(collection: collection),
-                ],
-              ),
+      body: _CollectionList(collections: collections),
+    );
+  }
+}
+
+// Its own widget so it reads the padding inside the Scaffold, which
+// includes the app bar it slides under.
+class _CollectionList extends StatelessWidget {
+  const _CollectionList({required this.collections});
+
+  final List<CollectionProgress> collections;
+
+  @override
+  Widget build(BuildContext context) {
+    // Starts below the app bar and ends above the navigation bar.
+    final inset = MediaQuery.paddingOf(context);
+
+    return ListView(
+      padding: EdgeInsets.only(
+        top: inset.top + AppSpacing.sm,
+        bottom: inset.bottom + AppSpacing.sm,
+      ),
+      children: [
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              spacing: AppSpacing.md,
+              children: [
+                for (final collection in collections)
+                  CollectionRow(collection: collection),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
