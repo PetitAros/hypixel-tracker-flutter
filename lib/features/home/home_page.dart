@@ -39,9 +39,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   // The app opens on the profile tab.
-  static const _profileIndex = 1;
-
-  int _index = _profileIndex;
+  int _index = _FloatingNavigationBar.profileIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -57,11 +55,11 @@ class _HomePageState extends State<HomePage> {
             repository: widget.auctionRepository,
             marketRepository: widget.marketRepository,
           ),
-          ProfilePage(repository: widget.playerRepository),
           BazaarPage(
             repository: widget.bazaarRepository,
             marketRepository: widget.marketRepository,
           ),
+          ProfilePage(repository: widget.playerRepository),
           EventsPage(repository: widget.eventsRepository),
           SettingsPage(controller: widget.settingsController),
         ],
@@ -84,11 +82,17 @@ class _FloatingNavigationBar extends StatelessWidget {
   // they are the tooltips and what screen readers announce.
   static const _tabs = [
     (Icons.gavel, 'Auctions'),
-    (Icons.person, 'Profile'),
     (Icons.storefront, 'Bazaar'),
+    (Icons.person, 'Profile'),
     (Icons.event, 'Events'),
     (Icons.settings, 'Options'),
   ];
+
+  /// The profile sits in the middle, as a bigger button over the bar.
+  static const profileIndex = 2;
+
+  // How far the profile button rises above the top of the bar.
+  static const _popOut = 16.0;
 
   static const _blur = 16.0;
 
@@ -98,44 +102,135 @@ class _FloatingNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final (profileIcon, profileLabel) = _tabs[profileIndex];
+
     return SafeArea(
       minimum: const EdgeInsets.only(bottom: AppSpacing.sm),
       // Only as wide as its buttons, centred at the bottom of the screen.
       child: Align(
         heightFactor: 1,
-        child: ClipRRect(
-          borderRadius: AppRadius.lg,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: _blur, sigmaY: _blur),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: context.palette.surfaceVariant.withValues(
-                  alpha: _backgroundOpacity,
-                ),
-                borderRadius: AppRadius.lg,
-                border: Border.all(
-                  color: context.palette.onBackground.withValues(
-                    alpha: _borderOpacity,
-                  ),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xs),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: AppSpacing.xs,
-                  children: [
-                    for (final (i, (icon, label)) in _tabs.indexed)
-                      _TabButton(
-                        icon: icon,
-                        label: label,
-                        selected: i == index,
-                        onTap: () => onChanged(i),
-                      ),
-                  ],
-                ),
+        // The profile button is drawn over the bar, in a gap left for it.
+        // The top padding keeps the part above the bar inside the stack,
+        // where it can still be tapped.
+        child: Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: _popOut),
+              child: _bar(context),
+            ),
+            Positioned(
+              bottom: AppSpacing.xs,
+              child: _ProfileButton(
+                icon: profileIcon,
+                label: profileLabel,
+                selected: index == profileIndex,
+                onTap: () => onChanged(profileIndex),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _bar(BuildContext context) {
+    return ClipRRect(
+      borderRadius: AppRadius.lg,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: _blur, sigmaY: _blur),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: context.palette.surfaceVariant.withValues(
+              alpha: _backgroundOpacity,
+            ),
+            borderRadius: AppRadius.lg,
+            border: Border.all(
+              color: context.palette.onBackground.withValues(
+                alpha: _borderOpacity,
+              ),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xs),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: AppSpacing.xs,
+              children: [
+                for (final (i, (icon, label)) in _tabs.indexed)
+                  if (i == profileIndex)
+                    const SizedBox(width: _ProfileButton.size)
+                  else
+                    _TabButton(
+                      icon: icon,
+                      label: label,
+                      selected: i == index,
+                      onTap: () => onChanged(i),
+                    ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// The profile tab: a bigger filled square that rises above the bar.
+class _ProfileButton extends StatelessWidget {
+  const _ProfileButton({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  static const size = 64.0;
+  static const _iconSize = 32.0;
+  static const _shadowBlur = 16.0;
+  static const _shadowOpacity = 0.5;
+  static const _borderOpacity = 0.12;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    // Open: filled with the accent and glowing. Closed: a plain square in
+    // the bar's colours, like the other tabs, so the difference is clear.
+    return Semantics(
+      selected: selected,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.lg,
+          border: selected
+              ? null
+              : Border.all(
+                  color: palette.onBackground.withValues(alpha: _borderOpacity),
+                ),
+          boxShadow: [
+            if (selected)
+              BoxShadow(
+                color: palette.accent.withValues(alpha: _shadowOpacity),
+                blurRadius: _shadowBlur,
+              ),
+          ],
+        ),
+        child: IconButton(
+          onPressed: onTap,
+          tooltip: label,
+          icon: Icon(icon, size: _iconSize),
+          style: IconButton.styleFrom(
+            fixedSize: const Size.square(size),
+            shape: const RoundedRectangleBorder(borderRadius: AppRadius.lg),
+            foregroundColor: selected
+                ? palette.onAccent
+                : palette.onSurfaceMuted,
+            backgroundColor: selected ? palette.accent : palette.surfaceVariant,
           ),
         ),
       ),
