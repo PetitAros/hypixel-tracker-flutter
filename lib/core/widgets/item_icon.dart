@@ -21,7 +21,7 @@ class ItemIcon extends StatelessWidget {
     final placeholder = Icon(
       fallback,
       size: size,
-      color: AppColors.onSurfaceMuted,
+      color: context.palette.onSurfaceMuted,
     );
     if (url == null) return placeholder;
 

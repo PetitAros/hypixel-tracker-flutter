@@ -38,7 +38,7 @@ class CollectionRow extends StatelessWidget {
                   Text(
                     'Tier ${collection.tier}/${collection.maxTier}',
                     style: textTheme.bodyLarge?.copyWith(
-                      color: maxed ? AppColors.gold : null,
+                      color: maxed ? context.palette.accent : null,
                     ),
                   ),
                 ],
@@ -48,7 +48,7 @@ class CollectionRow extends StatelessWidget {
                 value: collection.tier / collection.maxTier,
                 minHeight: _barHeight,
                 borderRadius: AppRadius.sm,
-                backgroundColor: AppColors.surface,
+                backgroundColor: context.palette.surface,
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(

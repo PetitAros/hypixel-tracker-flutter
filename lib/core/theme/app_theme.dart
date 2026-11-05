@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:hypixel_tracker/domain/entities/app_settings.dart';
 
 // ---------------------------------------------------------------------------
 // 1. Raw design tokens — the ONLY place literal values are allowed to live.
@@ -7,24 +9,14 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Brand
-  static const gold = Color(0xFFF4C430); // Hypixel/SkyBlock gold accent
-  static const goldDark = Color(0xFFB8860B);
-
   // Semantic
   static const success = Color(0xFF4CAF50); // e.g. bazaar sell price up
   static const danger = Color(0xFFE53935); // e.g. price drop, error state
   static const warning = Color(0xFFFFA726); // e.g. auction ending soon
 
-  // Neutrals (dark theme, fits a Minecraft/SkyBlock aesthetic)
-  static const background = Color(0xFF121212);
-  static const surface = Color(0xFF1E1E1E);
-  static const surfaceVariant = Color(0xFF2A2A2A);
-  static const onBackground = Color(0xFFEDEDED);
-  static const onSurfaceMuted = Color(0xFFA0A0A0);
+  // The accent and the neutrals depend on the user's choice: see AppPalette.
 
   // SkyBlock rarities (Minecraft chat colours)
-  static const rarityCommon = Color(0xFFFFFFFF);
   static const rarityUncommon = Color(0xFF55FF55);
   static const rarityRare = Color(0xFF5555FF);
   static const rarityEpic = Color(0xFFAA00AA);
@@ -32,6 +24,104 @@ class AppColors {
   static const rarityMythic = Color(0xFFFF55FF);
   static const rarityDivine = Color(0xFF55FFFF);
   static const raritySpecial = Color(0xFFFF5555);
+}
+
+// The colours that change with the options tab: the accent (Hypixel gold,
+// purple or green) and the light or dark neutrals. Read it in a widget with
+// `context.palette`.
+class AppPalette extends ThemeExtension<AppPalette> {
+  final Brightness brightness;
+  final Color accent;
+  final Color accentDark;
+  final Color onAccent; // text and icons on an accent background
+  final Color background;
+  final Color surface;
+  final Color surfaceVariant;
+  final Color onBackground;
+  final Color onSurfaceMuted;
+
+  const AppPalette({
+    required this.brightness,
+    required this.accent,
+    required this.accentDark,
+    required this.onAccent,
+    required this.background,
+    required this.surface,
+    required this.surfaceVariant,
+    required this.onBackground,
+    required this.onSurfaceMuted,
+  });
+
+  factory AppPalette.of(AppAccent accent, AppBrightness brightness) {
+    final dark = brightness == AppBrightness.dark;
+
+    // On a light background the bright accents are hard to read, so each
+    // accent has a deeper shade for the light theme.
+    final (Color main, Color deep) = switch ((accent, dark)) {
+      (AppAccent.hypixel, true) => (
+        const Color(0xFFF4C430), // Hypixel/SkyBlock gold
+        const Color(0xFFB8860B),
+      ),
+      (AppAccent.hypixel, false) => (
+        const Color(0xFFB8860B),
+        const Color(0xFF8B6508),
+      ),
+      (AppAccent.purple, true) => (
+        const Color(0xFFB388FF),
+        const Color(0xFF7C4DFF),
+      ),
+      (AppAccent.purple, false) => (
+        const Color(0xFF7E57C2),
+        const Color(0xFF5E35B1),
+      ),
+      (AppAccent.green, true) => (
+        const Color(0xFF4ADE80),
+        const Color(0xFF16A34A),
+      ),
+      (AppAccent.green, false) => (
+        const Color(0xFF2E7D32),
+        const Color(0xFF1B5E20),
+      ),
+    };
+
+    return dark
+        ? AppPalette(
+            brightness: Brightness.dark,
+            accent: main,
+            accentDark: deep,
+            onAccent: const Color(0xFF121212),
+            // Fits a Minecraft/SkyBlock aesthetic.
+            background: const Color(0xFF121212),
+            surface: const Color(0xFF1E1E1E),
+            surfaceVariant: const Color(0xFF2A2A2A),
+            onBackground: const Color(0xFFEDEDED),
+            onSurfaceMuted: const Color(0xFFA0A0A0),
+          )
+        : AppPalette(
+            brightness: Brightness.light,
+            accent: main,
+            accentDark: deep,
+            onAccent: const Color(0xFFFFFFFF),
+            // Cards (surfaceVariant) are white on a grey page.
+            background: const Color(0xFFF2F2F5),
+            surface: const Color(0xFFE4E4EA),
+            surfaceVariant: const Color(0xFFFFFFFF),
+            onBackground: const Color(0xFF1B1B1F),
+            onSurfaceMuted: const Color(0xFF5E5E66),
+          );
+  }
+
+  @override
+  AppPalette copyWith() => this;
+
+  // Switching theme swaps the palette at once, no animation needed.
+  @override
+  AppPalette lerp(AppPalette? other, double t) =>
+      t < 0.5 ? this : (other ?? this);
+}
+
+extension AppPaletteContext on BuildContext {
+  AppPalette get palette => Theme.of(this).extension<AppPalette>()!;
 }
 
 class AppSpacing {
@@ -65,42 +155,42 @@ class AppTextStyles {
   static const _fontFamily =
       'Inter'; // swap for a Minecraft-y display font if desired
 
-  static const TextTheme textTheme = TextTheme(
+  static TextTheme textTheme(AppPalette palette) => TextTheme(
     headlineLarge: TextStyle(
       fontFamily: _fontFamily,
       fontSize: 28,
       fontWeight: FontWeight.w700,
-      color: AppColors.onBackground,
+      color: palette.onBackground,
     ),
     headlineMedium: TextStyle(
       fontFamily: _fontFamily,
       fontSize: 22,
       fontWeight: FontWeight.w600,
-      color: AppColors.onBackground,
+      color: palette.onBackground,
     ),
     titleMedium: TextStyle(
       fontFamily: _fontFamily,
       fontSize: 17,
       fontWeight: FontWeight.w600,
-      color: AppColors.onBackground,
+      color: palette.onBackground,
     ),
     bodyLarge: TextStyle(
       fontFamily: _fontFamily,
       fontSize: 15,
       fontWeight: FontWeight.w400,
-      color: AppColors.onBackground,
+      color: palette.onBackground,
     ),
     bodyMedium: TextStyle(
       fontFamily: _fontFamily,
       fontSize: 13,
       fontWeight: FontWeight.w400,
-      color: AppColors.onSurfaceMuted,
+      color: palette.onSurfaceMuted,
     ),
     labelLarge: TextStyle(
       fontFamily: _fontFamily,
       fontSize: 14,
       fontWeight: FontWeight.w600,
-      color: AppColors.background,
+      color: palette.onAccent,
     ),
   );
 }
@@ -112,30 +202,48 @@ class AppTextStyles {
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get dark {
-    final colorScheme = const ColorScheme.dark(
-      primary: AppColors.gold,
-      onPrimary: AppColors.background,
-      secondary: AppColors.goldDark,
-      error: AppColors.danger,
-      surface: AppColors.surface,
-      onSurface: AppColors.onBackground,
-    );
+  static ThemeData build(AppSettings settings) {
+    final palette = AppPalette.of(settings.accent, settings.brightness);
+    final textTheme = AppTextStyles.textTheme(palette);
+    final dark = palette.brightness == Brightness.dark;
+
+    final colorScheme =
+        ColorScheme.fromSeed(
+          seedColor: palette.accent,
+          brightness: palette.brightness,
+        ).copyWith(
+          primary: palette.accent,
+          onPrimary: palette.onAccent,
+          secondary: palette.accentDark,
+          error: AppColors.danger,
+          surface: palette.surface,
+          onSurface: palette.onBackground,
+        );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: AppColors.background,
-      textTheme: AppTextStyles.textTheme,
+      scaffoldBackgroundColor: palette.background,
+      textTheme: textTheme,
+      extensions: [palette],
 
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surface,
+      appBarTheme: AppBarTheme(
+        backgroundColor: palette.surface,
+        foregroundColor: palette.onBackground,
         elevation: 0,
         centerTitle: false,
-      ).copyWith(titleTextStyle: AppTextStyles.textTheme.headlineMedium),
+        titleTextStyle: textTheme.headlineMedium,
+        // The app bars are see-through: the status bar icons must contrast
+        // with the page, not with the bar.
+        systemOverlayStyle: dark
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
+      ),
+
+      iconTheme: IconThemeData(color: palette.onBackground),
 
       cardTheme: CardThemeData(
-        color: AppColors.surfaceVariant,
+        color: palette.surfaceVariant,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: AppRadius.lg),
         margin: const EdgeInsets.symmetric(
@@ -146,9 +254,9 @@ class AppTheme {
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.gold,
-          foregroundColor: AppColors.background,
-          textStyle: AppTextStyles.textTheme.labelLarge,
+          backgroundColor: palette.accent,
+          foregroundColor: palette.onAccent,
+          textStyle: textTheme.labelLarge,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.sm,
@@ -157,25 +265,34 @@ class AppTheme {
         ),
       ),
 
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: SegmentedButton.styleFrom(
+          foregroundColor: palette.onSurfaceMuted,
+          selectedForegroundColor: palette.accent,
+          selectedBackgroundColor: palette.accent.withValues(alpha: 0.2),
+          side: BorderSide(color: palette.surface),
+        ),
+      ),
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceVariant,
+        fillColor: palette.surfaceVariant,
         contentPadding: const EdgeInsets.all(AppSpacing.md),
         border: OutlineInputBorder(
           borderRadius: AppRadius.xl,
           borderSide: BorderSide.none,
         ),
-        hintStyle: AppTextStyles.textTheme.bodyMedium,
+        hintStyle: textTheme.bodyMedium,
       ),
 
-      dividerTheme: const DividerThemeData(
-        color: AppColors.surfaceVariant,
+      dividerTheme: DividerThemeData(
+        color: palette.surfaceVariant,
         thickness: 1,
       ),
 
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.surfaceVariant,
-        labelStyle: AppTextStyles.textTheme.bodyMedium,
+        backgroundColor: palette.surfaceVariant,
+        labelStyle: textTheme.bodyMedium,
         shape: RoundedRectangleBorder(borderRadius: AppRadius.lg),
       ),
     );
@@ -197,6 +314,6 @@ class AppTheme {
 // And in main.dart:
 //
 //   MaterialApp.router(
-//     theme: AppTheme.dark,
+//     theme: AppTheme.build(settings),
 //     routerConfig: router,
 //   )

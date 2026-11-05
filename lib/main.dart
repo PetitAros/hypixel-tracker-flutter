@@ -20,6 +20,7 @@ import 'package:hypixel_tracker/data/repositories/events_repository_impl.dart';
 import 'package:hypixel_tracker/data/repositories/market_repository_impl.dart';
 import 'package:hypixel_tracker/data/repositories/player_repository_impl.dart';
 import 'package:hypixel_tracker/data/repositories/profile_repository_impl.dart';
+import 'package:hypixel_tracker/data/repositories/settings_repository_impl.dart';
 import 'package:hypixel_tracker/domain/repositories/auction_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/bazaar_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/events_repository.dart';
@@ -28,6 +29,7 @@ import 'package:hypixel_tracker/domain/repositories/player_repository.dart';
 import 'package:hypixel_tracker/features/events/background/events_sync.dart';
 import 'package:hypixel_tracker/features/home/home_page.dart';
 import 'package:hypixel_tracker/features/profile/profile_controller.dart';
+import 'package:hypixel_tracker/features/settings/settings_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -86,6 +88,11 @@ Future<void> main() async {
     playerRepository,
   )..restore();
 
+  // App-wide state: the theme picked in the options tab.
+  final settingsController = SettingsController(
+    SettingsRepositoryImpl(local: preferences),
+  );
+
   runApp(
     MyApp(
       bazaarRepository: bazaarRepository,
@@ -94,6 +101,7 @@ Future<void> main() async {
       marketRepository: marketRepository,
       playerRepository: playerRepository,
       profileController: profileController,
+      settingsController: settingsController,
     ),
   );
 }
@@ -107,6 +115,7 @@ class MyApp extends StatelessWidget {
     required this.marketRepository,
     required this.playerRepository,
     required this.profileController,
+    required this.settingsController,
   });
 
   final BazaarRepository bazaarRepository;
@@ -115,21 +124,27 @@ class MyApp extends StatelessWidget {
   final MarketRepository marketRepository;
   final PlayerRepository playerRepository;
   final ProfileController profileController;
+  final SettingsController settingsController;
 
   @override
   Widget build(BuildContext context) {
     // Above MaterialApp, so every page and pushed route can read it.
     return ProfileScope(
       controller: profileController,
-      child: MaterialApp(
-        title: 'Hypixel Tracker',
-        theme: AppTheme.dark,
-        home: HomePage(
-          auctionRepository: auctionRepository,
-          bazaarRepository: bazaarRepository,
-          eventsRepository: eventsRepository,
-          marketRepository: marketRepository,
-          playerRepository: playerRepository,
+      // Rebuilds the theme when the options change.
+      child: ListenableBuilder(
+        listenable: settingsController,
+        builder: (context, _) => MaterialApp(
+          title: 'Hypixel Tracker',
+          theme: AppTheme.build(settingsController.settings),
+          home: HomePage(
+            auctionRepository: auctionRepository,
+            bazaarRepository: bazaarRepository,
+            eventsRepository: eventsRepository,
+            marketRepository: marketRepository,
+            playerRepository: playerRepository,
+            settingsController: settingsController,
+          ),
         ),
       ),
     );

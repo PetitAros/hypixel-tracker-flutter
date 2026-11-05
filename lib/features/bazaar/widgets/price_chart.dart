@@ -11,12 +11,12 @@ class PriceChart extends StatelessWidget {
   final List<BazaarPricePoint> points;
 
   static const _height = 140.0;
-  static const _buyColor = AppColors.gold;
   static const _sellColor = AppColors.success;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final buyColor = context.palette.accent;
 
     var low = points.first.sell;
     var high = points.first.buy;
@@ -45,7 +45,7 @@ class PriceChart extends StatelessWidget {
       children: [
         Row(
           children: [
-            legend(_buyColor, 'Buy'),
+            legend(buyColor, 'Buy'),
             const SizedBox(width: AppSpacing.md),
             legend(_sellColor, 'Sell'),
             const Spacer(),
@@ -64,9 +64,9 @@ class PriceChart extends StatelessWidget {
               points: points,
               low: low,
               high: high,
-              buyColor: _buyColor,
+              buyColor: buyColor,
               sellColor: _sellColor,
-              gridColor: AppColors.surface,
+              gridColor: context.palette.surface,
             ),
           ),
         ),

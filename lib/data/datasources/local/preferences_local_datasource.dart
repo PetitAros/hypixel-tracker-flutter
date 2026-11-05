@@ -1,4 +1,5 @@
 import 'package:hive_ce/hive.dart';
+import 'package:hypixel_tracker/domain/entities/app_settings.dart';
 import 'package:hypixel_tracker/domain/entities/item_summary.dart';
 import 'package:hypixel_tracker/domain/entities/player.dart';
 
@@ -11,6 +12,7 @@ class PreferencesLocalDatasource {
 
   static const _followedPlayerKey = 'followed_player';
   static const _recentItemsKey = 'recent_items';
+  static const _settingsKey = 'settings';
 
   Player? readFollowedPlayer() {
     final saved = metaBox.get(_followedPlayerKey);
@@ -28,6 +30,28 @@ class PreferencesLocalDatasource {
     return metaBox.put(_followedPlayerKey, {
       'uuid': player.uuid,
       'name': player.name,
+    });
+  }
+
+  /// Stored by enum name, so reordering the enums keeps the choice.
+  AppSettings readSettings() {
+    final saved = metaBox.get(_settingsKey);
+    if (saved is! Map) return AppSettings.defaults;
+
+    return AppSettings(
+      brightness:
+          AppBrightness.values.asNameMap()[saved['brightness']] ??
+          AppSettings.defaults.brightness,
+      accent:
+          AppAccent.values.asNameMap()[saved['accent']] ??
+          AppSettings.defaults.accent,
+    );
+  }
+
+  Future<void> saveSettings(AppSettings settings) {
+    return metaBox.put(_settingsKey, {
+      'brightness': settings.brightness.name,
+      'accent': settings.accent.name,
     });
   }
 

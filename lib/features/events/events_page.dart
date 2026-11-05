@@ -176,7 +176,7 @@ class _EventCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: AppColors.gold),
+                Icon(icon, color: context.palette.accent),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
@@ -210,7 +210,7 @@ class _TimeLine extends StatelessWidget {
         Text('$label ', style: style),
         Countdown(
           endsAt: at,
-          style: style?.copyWith(color: AppColors.gold),
+          style: style?.copyWith(color: context.palette.accent),
         ),
       ],
     );
@@ -260,7 +260,7 @@ class _MayorCard extends StatelessWidget {
                   : candidate.votes / election.totalVotes,
               minHeight: _barHeight,
               borderRadius: AppRadius.sm,
-              backgroundColor: AppColors.surface,
+              backgroundColor: context.palette.surface,
             ),
           ],
         ],

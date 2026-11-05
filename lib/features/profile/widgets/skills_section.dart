@@ -59,7 +59,12 @@ class _SkillRow extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(icon, color: maxed ? AppColors.gold : AppColors.onSurfaceMuted),
+        Icon(
+          icon,
+          color: maxed
+              ? context.palette.accent
+              : context.palette.onSurfaceMuted,
+        ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(
@@ -83,7 +88,7 @@ class _SkillRow extends StatelessWidget {
                 value: skill.progress,
                 minHeight: _barHeight,
                 borderRadius: AppRadius.sm,
-                backgroundColor: AppColors.surface,
+                backgroundColor: context.palette.surface,
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(

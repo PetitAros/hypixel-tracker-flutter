@@ -39,7 +39,7 @@ class PriceRangeBar extends StatelessWidget {
         ? AppColors.success
         : goodness < _third
         ? AppColors.danger
-        : AppColors.onSurfaceMuted;
+        : context.palette.onSurfaceMuted;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,8 +62,8 @@ class PriceRangeBar extends StatelessWidget {
               children: [
                 Container(
                   height: _trackHeight,
-                  decoration: const BoxDecoration(
-                    color: AppColors.surface,
+                  decoration: BoxDecoration(
+                    color: context.palette.surface,
                     borderRadius: AppRadius.sm,
                   ),
                 ),

@@ -21,7 +21,7 @@ class PlayerHead extends StatelessWidget {
       width: size,
       height: size,
       errorBuilder: (context, error, stackTrace) =>
-          Icon(Icons.account_circle, size: size, color: AppColors.gold),
+          Icon(Icons.account_circle, size: size, color: context.palette.accent),
     );
   }
 }

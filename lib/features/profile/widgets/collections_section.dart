@@ -97,7 +97,9 @@ class _CategoryRow extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: allMaxed ? AppColors.gold : AppColors.onSurfaceMuted,
+              color: allMaxed
+                  ? context.palette.accent
+                  : context.palette.onSurfaceMuted,
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -112,7 +114,7 @@ class _CategoryRow extends StatelessWidget {
                       Text(
                         '$maxedCount/${items.length} maxed',
                         style: textTheme.bodyLarge?.copyWith(
-                          color: allMaxed ? AppColors.gold : null,
+                          color: allMaxed ? context.palette.accent : null,
                         ),
                       ),
                     ],
@@ -122,7 +124,7 @@ class _CategoryRow extends StatelessWidget {
                     value: maxTiers == 0 ? 0 : tiers / maxTiers,
                     minHeight: _barHeight,
                     borderRadius: AppRadius.sm,
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: context.palette.surface,
                   ),
                 ],
               ),

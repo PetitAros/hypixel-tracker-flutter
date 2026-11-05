@@ -37,7 +37,7 @@ class ItemSearchTile extends StatelessWidget {
       title: Text(item.name, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(
         item.tier.replaceAll('_', ' '),
-        style: TextStyle(color: rarityColor(item.tier)),
+        style: TextStyle(color: rarityColor(context, item.tier)),
       ),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
