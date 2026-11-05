@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hypixel_tracker/core/theme/app_theme.dart';
 import 'package:hypixel_tracker/core/utils/formatters.dart';
@@ -8,7 +9,6 @@ import 'package:hypixel_tracker/core/widgets/skeleton.dart';
 import 'package:hypixel_tracker/core/widgets/state_message.dart';
 import 'package:hypixel_tracker/domain/entities/skyblock_events.dart';
 import 'package:hypixel_tracker/domain/repositories/events_repository.dart';
-import 'package:hypixel_tracker/features/events/background/events_notifier.dart';
 import 'package:hypixel_tracker/features/events/events_controller.dart';
 
 // The events tab: mayor and election, Bingo, fire sales. Loading it also
@@ -53,10 +53,6 @@ class _EventsPageState extends State<EventsPage> {
                 'Updated ${Formatters.dateTime(events.fetchedAt)}',
               _ => null,
             },
-            actions: [
-              if (defaultTargetPlatform == TargetPlatform.android)
-                const _AlertsButton(),
-            ],
           ),
           body: switch (state) {
             EventsLoading() => const SkeletonList(
@@ -74,54 +70,6 @@ class _EventsPageState extends State<EventsPage> {
           },
         );
       },
-    );
-  }
-}
-
-// Asks for the notification permission; hidden once it is granted.
-class _AlertsButton extends StatefulWidget {
-  const _AlertsButton();
-
-  @override
-  State<_AlertsButton> createState() => _AlertsButtonState();
-}
-
-class _AlertsButtonState extends State<_AlertsButton> {
-  bool _enabled = true;
-
-  @override
-  void initState() {
-    super.initState();
-    EventsNotifier.areEnabled().then((enabled) {
-      if (mounted) setState(() => _enabled = enabled);
-    });
-  }
-
-  Future<void> _request() async {
-    final messenger = ScaffoldMessenger.of(context);
-    final granted = await EventsNotifier.requestPermission();
-    if (!mounted) return;
-
-    setState(() => _enabled = granted);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          granted
-              ? 'Alerts on: fire sales, elections and Bingo.'
-              : 'Allow notifications in the system settings to get alerts.',
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_enabled) return const SizedBox.shrink();
-
-    return IconButton(
-      icon: const Icon(Icons.notifications_off_outlined),
-      tooltip: 'Turn on alerts',
-      onPressed: _request,
     );
   }
 }
@@ -145,12 +93,86 @@ class _EventsList extends StatelessWidget {
         bottom: inset.bottom + AppSpacing.sm,
       ),
       children: [
+        _NextEventCard(events: events),
         _MayorCard(events: events),
         if (bingo != null) _BingoCard(bingo: bingo),
         _FireSalesCard(sales: events.fireSales),
       ],
     );
   }
+}
+
+// The soonest event to come, with a big countdown. Moves on to the next one
+// by itself when the time comes.
+class _NextEventCard extends StatefulWidget {
+  const _NextEventCard({required this.events});
+
+  final SkyblockEvents events;
+
+  @override
+  State<_NextEventCard> createState() => _NextEventCardState();
+}
+
+class _NextEventCardState extends State<_NextEventCard> {
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final now = DateTime.now();
+    final upcoming = widget.events.upcoming(now);
+    final next = upcoming.firstOrNull;
+
+    // Rebuilds when this event is reached, to show the one after.
+    _timer?.cancel();
+    if (next != null) {
+      _timer = Timer(next.at.difference(now), () {
+        if (mounted) setState(() {});
+      });
+    }
+
+    return _EventCard(
+      icon: Icons.timer_outlined,
+      title: 'Next event',
+      children: [
+        if (next == null)
+          Text('Nothing scheduled.', style: textTheme.bodyLarge)
+        else ...[
+          Text(next.label, style: textTheme.bodyLarge),
+          Countdown(
+            endsAt: next.at,
+            style: textTheme.headlineLarge?.copyWith(
+              color: context.palette.accent,
+            ),
+          ),
+          Text(Formatters.dateTime(next.at), style: textTheme.bodyMedium),
+          // A glimpse of what follows.
+          for (final later in upcoming.skip(1).take(_laterCount))
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    later.label,
+                    style: textTheme.bodyMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Countdown(endsAt: later.at, style: textTheme.bodyMedium),
+              ],
+            ),
+        ],
+      ],
+    );
+  }
+
+  static const _laterCount = 2;
 }
 
 // A card with an icon and a title, then its content.

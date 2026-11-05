@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hypixel_tracker/core/theme/app_theme.dart';
 import 'package:hypixel_tracker/core/widgets/fading_app_bar.dart';
 import 'package:hypixel_tracker/domain/entities/app_settings.dart';
+import 'package:hypixel_tracker/features/events/background/events_notifier.dart';
 import 'package:hypixel_tracker/features/settings/settings_controller.dart';
 
-// The options tab: light or dark theme, and the accent colour.
+// The options tab: light or dark theme, the accent colour, and the event
+// alerts.
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key, required this.controller});
 
@@ -89,6 +92,9 @@ class _SettingsList extends StatelessWidget {
                 controller.setAccent(selected.single),
           ),
         ),
+        // Alerts are Android only, like the background sync behind them.
+        if (defaultTargetPlatform == TargetPlatform.android)
+          const _SettingCard(title: 'Notifications', child: _AlertsSetting()),
       ],
     );
   }
@@ -114,6 +120,96 @@ class _SettingCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// Turns the event alerts on (the Android notification permission), or
+// sends a test once they are on.
+class _AlertsSetting extends StatefulWidget {
+  const _AlertsSetting();
+
+  @override
+  State<_AlertsSetting> createState() => _AlertsSettingState();
+}
+
+class _AlertsSettingState extends State<_AlertsSetting> {
+  // Null until the permission was checked.
+  bool? _enabled;
+
+  // The permission can change in the system settings while the app is in
+  // the background: check again when it comes back.
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(onResume: _check);
+    _check();
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  Future<void> _check() async {
+    final enabled = await EventsNotifier.areEnabled();
+    if (mounted) setState(() => _enabled = enabled);
+  }
+
+  Future<void> _turnOn() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final granted = await EventsNotifier.requestPermission();
+    if (!mounted) return;
+
+    setState(() => _enabled = granted);
+    if (!granted) {
+      // Android stops asking after two refusals.
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Notifications are blocked. Allow them in Android settings, '
+            'under Apps > hypixel_tracker > Notifications.',
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final enabled = _enabled;
+    if (enabled == null) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.md,
+      children: [
+        Text(
+          enabled
+              ? 'On. You get an alert when a fire sale is announced or '
+                    'starts, when the mayor election opens and closes, and '
+                    'when Bingo starts or has a day left.'
+              : 'Off. Turn them on to hear about fire sales, mayor '
+                    'elections and Bingo, even with the app closed.',
+          style: textTheme.bodyMedium,
+        ),
+        if (enabled)
+          OutlinedButton.icon(
+            onPressed: EventsNotifier.showTest,
+            icon: const Icon(Icons.notifications_active_outlined),
+            label: const Text('Send a test notification'),
+          )
+        else
+          ElevatedButton.icon(
+            onPressed: _turnOn,
+            icon: const Icon(Icons.notifications_outlined),
+            label: const Text('Turn on alerts'),
+          ),
+      ],
     );
   }
 }

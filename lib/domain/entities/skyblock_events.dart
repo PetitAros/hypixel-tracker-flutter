@@ -57,6 +57,14 @@ class BingoEvent {
   });
 }
 
+// A known moment to come, e.g. "Bingo ends" on the 12th.
+class UpcomingEvent {
+  final String label;
+  final DateTime at;
+
+  const UpcomingEvent({required this.label, required this.at});
+}
+
 // What is going on in SkyBlock: the mayor, the election, Bingo, fire sales.
 class SkyblockEvents {
   final Mayor mayor;
@@ -87,4 +95,26 @@ class SkyblockEvents {
     required this.fireSales,
     required this.fetchedAt,
   });
+
+  /// Every known moment after [now], the soonest first.
+  List<UpcomingEvent> upcoming(DateTime now) {
+    final election = this.election;
+    final bingo = this.bingo;
+
+    return [
+        if (election == null)
+          UpcomingEvent(label: 'Mayor election opens', at: nextElectionAt)
+        else
+          UpcomingEvent(label: 'Election results', at: termEndsAt),
+        if (bingo != null) ...[
+          UpcomingEvent(label: 'Bingo ${bingo.name} starts', at: bingo.start),
+          UpcomingEvent(label: 'Bingo ${bingo.name} ends', at: bingo.end),
+        ],
+        for (final sale in fireSales) ...[
+          UpcomingEvent(label: 'Fire sale: ${sale.itemName}', at: sale.start),
+          UpcomingEvent(label: '${sale.itemName} sale ends', at: sale.end),
+        ],
+      ].where((event) => event.at.isAfter(now)).toList()
+      ..sort((a, b) => a.at.compareTo(b.at));
+  }
 }

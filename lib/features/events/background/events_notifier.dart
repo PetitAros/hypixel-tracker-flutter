@@ -25,6 +25,7 @@ class EventsNotifier {
   static const _newMayorId = 2;
   static const _bingoStartsId = 3;
   static const _bingoEndingId = 4;
+  static const _testId = 5;
   static const _fireSaleStartsId = 100; // + index of the sale
 
   static const _bingoWarning = Duration(days: 1);
@@ -51,6 +52,16 @@ class EventsNotifier {
   /// Shows the Android 13+ permission prompt. True when granted.
   static Future<bool> requestPermission() async =>
       await _android?.requestNotificationsPermission() ?? false;
+
+  /// Right away, so the user can check alerts reach them.
+  static Future<void> showTest() {
+    return _plugin.show(
+      id: _testId,
+      title: 'Alerts are on',
+      body: 'You will be told about fire sales, elections and Bingo.',
+      notificationDetails: _details,
+    );
+  }
 
   static Future<void> update(SkyblockEvents events) async {
     await _announceNewFireSales(events.fireSales);
