@@ -114,10 +114,23 @@ class AppPalette extends ThemeExtension<AppPalette> {
   @override
   AppPalette copyWith() => this;
 
-  // Switching theme swaps the palette at once, no animation needed.
+  // Blends every colour, so the palette moves with Flutter's own colours
+  // whenever a theme is animated. Brightness cannot blend: it flips halfway.
   @override
-  AppPalette lerp(AppPalette? other, double t) =>
-      t < 0.5 ? this : (other ?? this);
+  AppPalette lerp(AppPalette? other, double t) {
+    if (other == null) return this;
+    return AppPalette(
+      brightness: t < 0.5 ? brightness : other.brightness,
+      accent: Color.lerp(accent, other.accent, t)!,
+      accentDark: Color.lerp(accentDark, other.accentDark, t)!,
+      onAccent: Color.lerp(onAccent, other.onAccent, t)!,
+      background: Color.lerp(background, other.background, t)!,
+      surface: Color.lerp(surface, other.surface, t)!,
+      surfaceVariant: Color.lerp(surfaceVariant, other.surfaceVariant, t)!,
+      onBackground: Color.lerp(onBackground, other.onBackground, t)!,
+      onSurfaceMuted: Color.lerp(onSurfaceMuted, other.onSurfaceMuted, t)!,
+    );
+  }
 }
 
 extension AppPaletteContext on BuildContext {

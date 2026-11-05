@@ -137,6 +137,8 @@ class MyApp extends StatelessWidget {
         builder: (context, _) => MaterialApp(
           title: 'Hypixel Tracker',
           theme: AppTheme.build(settingsController.settings),
+          // A fade would rebuild every tab on each frame: switch at once.
+          themeAnimationDuration: Duration.zero,
           home: HomePage(
             auctionRepository: auctionRepository,
             bazaarRepository: bazaarRepository,
