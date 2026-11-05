@@ -5,16 +5,19 @@ import 'package:hypixel_tracker/domain/entities/skyblock_events.dart';
 
 // The Android home screen widget (EventsWidgetProvider.kt). Dart writes
 // ready-to-show lines; the Kotlin side only puts them in the layout, except
-// for the next event: Dart writes the next few with their times, and Kotlin
-// shows the first one not yet passed with a live countdown.
+// for the next event badge: Dart writes the coming events with their times,
+// and Kotlin shows the first one not yet passed with a live countdown.
 // Redraws are scheduled at each of those times so it moves on by itself.
 class EventsHomeWidget {
   EventsHomeWidget._();
 
   static const _provider = 'io.lecomte.hypixel_tracker.EventsWidgetProvider';
 
-  // Enough to last until the next background sync, an hour later.
-  static const _nextCount = 10;
+  // The badge includes the hourly events (Dark Auction, Jacob's contests),
+  // so the list must last well past the next background sync, which Android
+  // may delay by hours.
+  static const _nextHorizon = Duration(hours: 12);
+  static const _nextCount = 40;
 
   static Future<void> update(SkyblockEvents events) async {
     final now = DateTime.now();
@@ -25,10 +28,7 @@ class EventsHomeWidget {
       'updated': Formatters.dateTime(events.fetchedAt),
     };
 
-    final next = events
-        .upcoming(now, calendar: SkyblockCalendar.events(now))
-        .take(_nextCount)
-        .toList();
+    final next = _nextEvents(events, now).take(_nextCount).toList();
     // One "millis<TAB>label" per line, read by EventsWidgetProvider.kt.
     lines['next_events'] = [
       for (final event in next)
@@ -42,6 +42,28 @@ class EventsHomeWidget {
     await HomeWidget.scheduleWidgetUpdates([
       for (final event in next) event.at,
     ], qualifiedAndroidName: _provider);
+  }
+
+  // Election, Bingo and fire sales, plus every calendar event, frequent ones
+  // included: the badge shows whatever comes first.
+  static List<UpcomingEvent> _nextEvents(SkyblockEvents events, DateTime now) {
+    final calendar = SkyblockCalendar.occurrences(now, within: _nextHorizon);
+
+    return [
+      ...events.upcoming(now),
+      for (final event in calendar) ...[
+        UpcomingEvent(
+          // An instant, like the Dark Auction, just has its name.
+          label: event.start == event.end ? event.name : '${event.name} starts',
+          at: event.start,
+        ),
+        // A festival counts down to its end while it is on.
+        if (!event.frequent)
+          UpcomingEvent(label: '${event.name} ends', at: event.end),
+      ],
+    ].where((event) => event.at.isAfter(now)).toList()..sort(
+      (a, b) => a.at.compareTo(b.at),
+    );
   }
 
   static Map<String, String> _mayorLines(SkyblockEvents events) {

@@ -113,6 +113,34 @@ class SkyblockCalendar {
     ]..sort((a, b) => a.start.compareTo(b.start));
   }
 
+  /// Every occurrence of every calendar event that is on at [now] or
+  /// starts before `now + within`, the soonest first. Unlike [events], the
+  /// frequent ones are there many times, e.g. each hourly Dark Auction.
+  static List<CalendarEvent> occurrences(
+    DateTime now, {
+    required Duration within,
+  }) {
+    final until = now.add(within);
+    final found = <String, CalendarEvent>{};
+
+    // Steps from one start or end to the next, collecting what is on or
+    // coming at each step.
+    var time = now;
+    while (time.isBefore(until)) {
+      final current = events(time);
+      for (final event in current) {
+        if (event.start.isBefore(until)) {
+          found['${event.name}@${event.start.millisecondsSinceEpoch}'] = event;
+        }
+      }
+      time = [
+        for (final event in current) ...[event.start, event.end],
+      ].where((t) => t.isAfter(time)).reduce((a, b) => a.isBefore(b) ? a : b);
+    }
+
+    return found.values.toList()..sort((a, b) => a.start.compareTo(b.start));
+  }
+
   // The first `epoch + offset + n * period` after [after].
   static DateTime _nextRepeating({
     required Duration period,
