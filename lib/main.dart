@@ -7,16 +7,18 @@ import 'package:hypixel_tracker/core/storage/hive_boxes.dart';
 import 'package:hypixel_tracker/data/datasources/local/auction_local_datasource.dart';
 import 'package:hypixel_tracker/data/datasources/local/bazaar_local_datasource.dart';
 import 'package:hypixel_tracker/data/datasources/local/preferences_local_datasource.dart';
+import 'package:hypixel_tracker/data/datasources/local/profile_local_datasource.dart';
 import 'package:hypixel_tracker/data/datasources/remote/coflnet_remote_datasource.dart';
 import 'package:hypixel_tracker/data/datasources/remote/hypixel_remote_datasource.dart';
 import 'package:hypixel_tracker/data/datasources/remote/mojang_remote_datasource.dart';
+import 'package:hypixel_tracker/data/datasources/remote/worker_remote_datasource.dart';
 import 'package:hypixel_tracker/data/models/auction_model.dart';
 import 'package:hypixel_tracker/data/models/bazaar_item_model.dart';
 import 'package:hypixel_tracker/data/repositories/auction_repository_impl.dart';
 import 'package:hypixel_tracker/data/repositories/bazaar_repository_impl.dart';
-import 'package:hypixel_tracker/data/repositories/fake_profile_repository.dart';
 import 'package:hypixel_tracker/data/repositories/market_repository_impl.dart';
 import 'package:hypixel_tracker/data/repositories/player_repository_impl.dart';
+import 'package:hypixel_tracker/data/repositories/profile_repository_impl.dart';
 import 'package:hypixel_tracker/domain/repositories/auction_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/bazaar_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/market_repository.dart';
@@ -64,10 +66,15 @@ Future<void> main() async {
     local: preferences,
   );
 
+  final profileRepository = ProfileRepositoryImpl(
+    remote: WorkerRemoteDatasource(client: client),
+    resources: remote,
+    local: ProfileLocalDatasource(metaBox: metaBox),
+  );
+
   // App-wide state: the followed player and their SkyBlock progress.
-  // Fake data until the Hypixel key is there.
   final profileController = ProfileController(
-    FakeProfileRepository(),
+    profileRepository,
     playerRepository,
   )..restore();
 
@@ -109,7 +116,7 @@ class MyApp extends StatelessWidget {
         home: HomePage(
           auctionRepository: auctionRepository,
           bazaarRepository: bazaarRepository,
-          marketRepository: marketRepository,
+              marketRepository: marketRepository,
           playerRepository: playerRepository,
         ),
       ),

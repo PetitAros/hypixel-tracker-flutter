@@ -35,6 +35,11 @@ class ProfilePage extends StatelessWidget {
         onChange: profile.clear,
         body: const SkeletonList(itemCount: 5, itemHeight: 120),
       ),
+      ProfileEmpty(:final player) => _FollowedPlayerScaffold(
+        player: player,
+        onChange: profile.clear,
+        body: StateMessage(text: '${player.name} has no SkyBlock profile.'),
+      ),
       ProfileFailed(:final player) => _FollowedPlayerScaffold(
         player: player,
         onChange: profile.clear,

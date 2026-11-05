@@ -73,8 +73,8 @@ class _Header extends StatelessWidget {
                 ],
               ),
             ),
-            // Nobody should mistake invented numbers for real ones.
-            if (profile.isDemo) const Chip(label: Text('Demo data')),
+            // The numbers may be out of date.
+            if (profile.fromCache) const Chip(label: Text('Offline')),
           ],
         ),
       ),

@@ -46,15 +46,15 @@ class PlayerProfile {
   final List<SkillProgress> skills;
   final List<CollectionProgress> collections;
 
-  /// True while the data is generated instead of coming from Hypixel.
-  final bool isDemo;
+  /// True when Hypixel could not be reached and this is the last copy saved.
+  final bool fromCache;
 
   const PlayerProfile({
     required this.player,
     required this.profileName,
     required this.skills,
     required this.collections,
-    required this.isDemo,
+    required this.fromCache,
   });
 
   double get skillAverage => skills.isEmpty
