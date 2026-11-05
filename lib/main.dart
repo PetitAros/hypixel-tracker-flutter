@@ -16,13 +16,16 @@ import 'package:hypixel_tracker/data/models/auction_model.dart';
 import 'package:hypixel_tracker/data/models/bazaar_item_model.dart';
 import 'package:hypixel_tracker/data/repositories/auction_repository_impl.dart';
 import 'package:hypixel_tracker/data/repositories/bazaar_repository_impl.dart';
+import 'package:hypixel_tracker/data/repositories/events_repository_impl.dart';
 import 'package:hypixel_tracker/data/repositories/market_repository_impl.dart';
 import 'package:hypixel_tracker/data/repositories/player_repository_impl.dart';
 import 'package:hypixel_tracker/data/repositories/profile_repository_impl.dart';
 import 'package:hypixel_tracker/domain/repositories/auction_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/bazaar_repository.dart';
+import 'package:hypixel_tracker/domain/repositories/events_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/market_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/player_repository.dart';
+import 'package:hypixel_tracker/features/events/background/events_sync.dart';
 import 'package:hypixel_tracker/features/home/home_page.dart';
 import 'package:hypixel_tracker/features/profile/profile_controller.dart';
 
@@ -54,6 +57,11 @@ Future<void> main() async {
     ),
   );
 
+  final eventsRepository = EventsRepositoryImpl(remote: remote);
+
+  // Home screen widget and alerts, refreshed in the background.
+  await EventsSync.register();
+
   final preferences = PreferencesLocalDatasource(metaBox: metaBox);
 
   final marketRepository = MarketRepositoryImpl(
@@ -82,6 +90,7 @@ Future<void> main() async {
     MyApp(
       bazaarRepository: bazaarRepository,
       auctionRepository: auctionRepository,
+      eventsRepository: eventsRepository,
       marketRepository: marketRepository,
       playerRepository: playerRepository,
       profileController: profileController,
@@ -94,6 +103,7 @@ class MyApp extends StatelessWidget {
     super.key,
     required this.bazaarRepository,
     required this.auctionRepository,
+    required this.eventsRepository,
     required this.marketRepository,
     required this.playerRepository,
     required this.profileController,
@@ -101,6 +111,7 @@ class MyApp extends StatelessWidget {
 
   final BazaarRepository bazaarRepository;
   final AuctionRepository auctionRepository;
+  final EventsRepository eventsRepository;
   final MarketRepository marketRepository;
   final PlayerRepository playerRepository;
   final ProfileController profileController;
@@ -116,7 +127,8 @@ class MyApp extends StatelessWidget {
         home: HomePage(
           auctionRepository: auctionRepository,
           bazaarRepository: bazaarRepository,
-              marketRepository: marketRepository,
+          eventsRepository: eventsRepository,
+          marketRepository: marketRepository,
           playerRepository: playerRepository,
         ),
       ),

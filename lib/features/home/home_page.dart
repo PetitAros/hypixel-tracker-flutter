@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:hypixel_tracker/core/theme/app_theme.dart';
 import 'package:hypixel_tracker/domain/repositories/auction_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/bazaar_repository.dart';
+import 'package:hypixel_tracker/domain/repositories/events_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/market_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/player_repository.dart';
 import 'package:hypixel_tracker/features/auction/auctions_page.dart';
 import 'package:hypixel_tracker/features/bazaar/bazaar_page.dart';
+import 'package:hypixel_tracker/features/events/events_page.dart';
 import 'package:hypixel_tracker/features/profile/profile_page.dart';
 
 // The main tabs, under a floating see-through navigation bar.
@@ -16,12 +18,14 @@ class HomePage extends StatefulWidget {
     super.key,
     required this.auctionRepository,
     required this.bazaarRepository,
+    required this.eventsRepository,
     required this.marketRepository,
     required this.playerRepository,
   });
 
   final AuctionRepository auctionRepository;
   final BazaarRepository bazaarRepository;
+  final EventsRepository eventsRepository;
   final MarketRepository marketRepository;
   final PlayerRepository playerRepository;
 
@@ -54,6 +58,7 @@ class _HomePageState extends State<HomePage> {
             repository: widget.bazaarRepository,
             marketRepository: widget.marketRepository,
           ),
+          EventsPage(repository: widget.eventsRepository),
         ],
       ),
       bottomNavigationBar: _FloatingNavigationBar(
@@ -76,6 +81,7 @@ class _FloatingNavigationBar extends StatelessWidget {
     (Icons.gavel, 'Auctions'),
     (Icons.person, 'Profile'),
     (Icons.storefront, 'Bazaar'),
+    (Icons.event, 'Events'),
   ];
 
   static const _blur = 16.0;

@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:hypixel_tracker/data/models/skyblock_profile_model.dart';
 import 'package:hypixel_tracker/data/models/auction_model.dart';
 import 'package:hypixel_tracker/data/models/bazaar_item_model.dart';
+import 'package:hypixel_tracker/data/models/skyblock_events_model.dart';
+import 'package:hypixel_tracker/domain/entities/skyblock_events.dart';
 
 class HypixelApiException implements Exception {
   final String message;
@@ -27,7 +29,7 @@ class AuctionsResponse {
   });
 }
 
-// Keyless Hypixel endpoints only (bazaar, auctions, resources).
+// Keyless Hypixel endpoints only (bazaar, auctions, resources, events).
 // Player data needs a key and goes through WorkerRemoteDatasource.
 class HypixelRemoteDatasource {
   final http.Client client;
@@ -120,6 +122,28 @@ class HypixelRemoteDatasource {
             ),
       ];
     });
+  }
+
+  /// Announced and running fire sales.
+  Future<List<FireSaleModel>> getFireSales() {
+    return _get('skyblock/firesales', 'fire sales', (body) {
+      final sales = body['sales'] as List<dynamic>;
+
+      return sales.map((sale) => FireSaleModel.fromJson(sale)).toList();
+    });
+  }
+
+  Future<ElectionModel> getElection() {
+    return _get(
+      'resources/skyblock/election',
+      'election',
+      ElectionModel.fromJson,
+    );
+  }
+
+  /// The current or last Bingo event, null when the API has none.
+  Future<BingoEvent?> getBingo() {
+    return _get('resources/skyblock/bingo', 'bingo', BingoModel.fromJson);
   }
 
   Future<T> _get<T>(

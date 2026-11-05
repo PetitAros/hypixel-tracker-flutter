@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SkyBlock events widget, filled by EventsWidgetProvider. Colours follow
+     AppColors in lib/core/theme/app_theme.dart. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/events_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/events_widget_background"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="SkyBlock events"
+            android:textColor="#F4C430"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/events_updated"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Open the app to load"
+            android:textColor="#A0A0A0"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/events_mayor"
+        style="@style/EventsWidgetTitle"
+        android:text="Mayor" />
+
+    <TextView
+        android:id="@+id/events_mayor_detail"
+        style="@style/EventsWidgetDetail"
+        android:text="…" />
+
+    <TextView
+        android:id="@+id/events_bingo"
+        style="@style/EventsWidgetTitle"
+        android:text="Bingo" />
+
+    <TextView
+        android:id="@+id/events_bingo_detail"
+        style="@style/EventsWidgetDetail"
+        android:text="…" />
+
+    <TextView
+        android:id="@+id/events_fire_sale"
+        style="@style/EventsWidgetTitle"
+        android:text="Fire sales" />
+
+    <TextView
+        android:id="@+id/events_fire_sale_detail"
+        style="@style/EventsWidgetDetail"
+        android:text="…" />
+</LinearLayout>
