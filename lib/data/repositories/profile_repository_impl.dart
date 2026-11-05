@@ -78,6 +78,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
               iconUrl: CoflnetRemoteDatasource.iconUrl(table.itemId),
             ),
       ],
+      forge: [
+        for (final process in model.forge)
+          process.toEntity(
+            quickForgeLevel: model.quickForgeLevel,
+            iconUrl: CoflnetRemoteDatasource.iconUrl(process.itemId),
+          ),
+      ],
     );
   }
 }

@@ -46,6 +46,22 @@ class ProfileLocalDatasource {
               maxTier: collection['maxTier'] as int,
             ),
         ],
+        // Missing from copies saved before the forge was tracked.
+        forge: [
+          for (final slot in saved['forge'] as List? ?? const [])
+            ForgeSlot(
+              slot: slot['slot'] as int,
+              itemName: slot['itemName'] as String,
+              iconUrl: slot['iconUrl'] as String,
+              startedAt: DateTime.fromMillisecondsSinceEpoch(
+                slot['startedAt'] as int,
+              ),
+              readyAt: switch (slot['readyAt']) {
+                final int millis => DateTime.fromMillisecondsSinceEpoch(millis),
+                _ => null,
+              },
+            ),
+        ],
       );
     } on TypeError {
       // Saved by an older version of the app.
@@ -77,6 +93,16 @@ class ProfileLocalDatasource {
             'amount': collection.amount,
             'tier': collection.tier,
             'maxTier': collection.maxTier,
+          },
+      ],
+      'forge': [
+        for (final slot in profile.forge)
+          {
+            'slot': slot.slot,
+            'itemName': slot.itemName,
+            'iconUrl': slot.iconUrl,
+            'startedAt': slot.startedAt.millisecondsSinceEpoch,
+            'readyAt': slot.readyAt?.millisecondsSinceEpoch,
           },
       ],
     });
