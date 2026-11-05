@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:hypixel_tracker/core/utils/formatters.dart';
+import 'package:hypixel_tracker/core/utils/skyblock_calendar.dart';
 import 'package:hypixel_tracker/domain/entities/skyblock_events.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -26,6 +27,7 @@ class EventsNotifier {
   static const _bingoStartsId = 3;
   static const _bingoEndingId = 4;
   static const _testId = 5;
+  static const _calendarId = 10; // + index of the festival
   static const _fireSaleStartsId = 100; // + index of the sale
 
   static const _bingoWarning = Duration(days: 1);
@@ -103,6 +105,17 @@ class EventsNotifier {
         bingo.end.subtract(_bingoWarning),
         'Bingo ends in 24 hours',
         'Last day to finish your ${bingo.name} card.',
+      );
+    }
+
+    // Festivals only: the frequent events would mean an alert every hour.
+    final festivals = SkyblockCalendar.events(now).where((e) => !e.frequent);
+    for (final (i, festival) in festivals.indexed) {
+      await _schedule(
+        _calendarId + i,
+        festival.start,
+        '${festival.name} has started',
+        'It lasts about an hour.',
       );
     }
 

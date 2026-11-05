@@ -57,6 +57,26 @@ class BingoEvent {
   });
 }
 
+// An event of the SkyBlock calendar, e.g. the Spooky Festival, at its
+// current or next occurrence.
+class CalendarEvent {
+  final String name;
+  final DateTime start;
+  final DateTime end; // same as start for an instant, e.g. the Dark Auction
+
+  /// Comes back at least every few hours: shown, but never alerted about.
+  final bool frequent;
+
+  const CalendarEvent({
+    required this.name,
+    required this.start,
+    required this.end,
+    this.frequent = false,
+  });
+
+  bool isOn(DateTime now) => !now.isBefore(start) && now.isBefore(end);
+}
+
 // A known moment to come, e.g. "Bingo ends" on the 12th.
 class UpcomingEvent {
   final String label;
@@ -96,8 +116,12 @@ class SkyblockEvents {
     required this.fetchedAt,
   });
 
-  /// Every known moment after [now], the soonest first.
-  List<UpcomingEvent> upcoming(DateTime now) {
+  /// Every known moment after [now], the soonest first. The [calendar]
+  /// festivals are included too; the frequent calendar events are not.
+  List<UpcomingEvent> upcoming(
+    DateTime now, {
+    List<CalendarEvent> calendar = const [],
+  }) {
     final election = this.election;
     final bingo = this.bingo;
 
@@ -114,6 +138,11 @@ class SkyblockEvents {
           UpcomingEvent(label: 'Fire sale: ${sale.itemName}', at: sale.start),
           UpcomingEvent(label: '${sale.itemName} sale ends', at: sale.end),
         ],
+        for (final event in calendar)
+          if (!event.frequent) ...[
+            UpcomingEvent(label: '${event.name} starts', at: event.start),
+            UpcomingEvent(label: '${event.name} ends', at: event.end),
+          ],
       ].where((event) => event.at.isAfter(now)).toList()
       ..sort((a, b) => a.at.compareTo(b.at));
   }

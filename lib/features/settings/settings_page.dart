@@ -191,10 +191,13 @@ class _AlertsSettingState extends State<_AlertsSetting> {
         Text(
           enabled
               ? 'On. You get an alert when a fire sale is announced or '
-                    'starts, when the mayor election opens and closes, and '
-                    'when Bingo starts or has a day left.'
+                    'starts, when the mayor election opens and closes, when '
+                    'Bingo starts or has a day left, and when a festival '
+                    '(Spooky Festival, Traveling Zoo, Season of Jerry, New '
+                    'Year) starts.'
               : 'Off. Turn them on to hear about fire sales, mayor '
-                    'elections and Bingo, even with the app closed.',
+                    'elections, Bingo and festivals, even with the app '
+                    'closed.',
           style: textTheme.bodyMedium,
         ),
         if (enabled)

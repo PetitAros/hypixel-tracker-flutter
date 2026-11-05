@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hypixel_tracker/core/theme/app_theme.dart';
 import 'package:hypixel_tracker/core/utils/formatters.dart';
+import 'package:hypixel_tracker/core/utils/skyblock_calendar.dart';
 import 'package:hypixel_tracker/core/widgets/countdown.dart';
 import 'package:hypixel_tracker/core/widgets/fading_app_bar.dart';
 import 'package:hypixel_tracker/core/widgets/skeleton.dart';
@@ -94,6 +95,7 @@ class _EventsList extends StatelessWidget {
       ),
       children: [
         _NextEventCard(events: events),
+        const _CalendarCard(),
         _MayorCard(events: events),
         if (bingo != null) _BingoCard(bingo: bingo),
         _FireSalesCard(sales: events.fireSales),
@@ -126,7 +128,10 @@ class _NextEventCardState extends State<_NextEventCard> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final now = DateTime.now();
-    final upcoming = widget.events.upcoming(now);
+    final upcoming = widget.events.upcoming(
+      now,
+      calendar: SkyblockCalendar.events(now),
+    );
     final next = upcoming.firstOrNull;
 
     // Rebuilds when this event is reached, to show the one after.
@@ -173,6 +178,71 @@ class _NextEventCardState extends State<_NextEventCard> {
   }
 
   static const _laterCount = 2;
+}
+
+// The SkyBlock calendar: each event with its countdown, or the time left
+// while it is on. Computed locally, so it moves on by itself.
+class _CalendarCard extends StatefulWidget {
+  const _CalendarCard();
+
+  @override
+  State<_CalendarCard> createState() => _CalendarCardState();
+}
+
+class _CalendarCardState extends State<_CalendarCard> {
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final now = DateTime.now();
+    final events = SkyblockCalendar.events(now);
+
+    // Rebuilds at the next start or end, to show the following occurrence.
+    final changes = [
+      for (final event in events) ...[event.start, event.end],
+    ].where((time) => time.isAfter(now));
+    _timer?.cancel();
+    _timer = Timer(
+      changes.reduce((a, b) => a.isBefore(b) ? a : b).difference(now),
+      () {
+        if (mounted) setState(() {});
+      },
+    );
+
+    return _EventCard(
+      icon: Icons.calendar_month,
+      title: 'SkyBlock calendar',
+      children: [
+        for (final event in events)
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  event.name,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: event.isOn(now) ? context.palette.accent : null,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (event.isOn(now)) ...[
+                Text('Now, ends in ', style: textTheme.bodyMedium),
+                Countdown(endsAt: event.end, style: textTheme.bodyMedium),
+              ] else
+                Countdown(endsAt: event.start, style: textTheme.bodyMedium),
+            ],
+          ),
+      ],
+    );
+  }
 }
 
 // A card with an icon and a title, then its content.
