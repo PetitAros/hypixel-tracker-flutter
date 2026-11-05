@@ -40,48 +40,72 @@ class PriceChart extends StatelessWidget {
       ],
     );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            legend(buyColor, 'Buy'),
-            const SizedBox(width: AppSpacing.md),
-            legend(_sellColor, 'Sell'),
-            const Spacer(),
-            Text(
-              'High ${Formatters.compact(high)}',
-              style: textTheme.bodyMedium,
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          height: _height,
-          width: double.infinity,
-          child: CustomPaint(
-            painter: _ChartPainter(
-              points: points,
-              low: low,
-              high: high,
-              buyColor: buyColor,
-              sellColor: _sellColor,
-              gridColor: context.palette.surface,
+    // A screen reader cannot see the lines: it reads this summary instead
+    // of the scattered legend and axis labels.
+    return Semantics(
+      container: true,
+      excludeSemantics: true,
+      label:
+          'Price chart, last 24 hours. '
+          '${_describe('Buy', (point) => point.buy)} '
+          '${_describe('Sell', (point) => point.sell)}',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              legend(buyColor, 'Buy'),
+              const SizedBox(width: AppSpacing.md),
+              legend(_sellColor, 'Sell'),
+              const Spacer(),
+              Text(
+                'High ${Formatters.compact(high)}',
+                style: textTheme.bodyMedium,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            height: _height,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: _ChartPainter(
+                points: points,
+                low: low,
+                high: high,
+                buyColor: buyColor,
+                sellColor: _sellColor,
+                gridColor: context.palette.surface,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Row(
-          children: [
-            Text('24 h ago', style: textTheme.bodyMedium),
-            const Spacer(),
-            Text('Low ${Formatters.compact(low)}', style: textTheme.bodyMedium),
-            const Spacer(),
-            Text('Now', style: textTheme.bodyMedium),
-          ],
-        ),
-      ],
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Text('24 h ago', style: textTheme.bodyMedium),
+              const Spacer(),
+              Text(
+                'Low ${Formatters.compact(low)}',
+                style: textTheme.bodyMedium,
+              ),
+              const Spacer(),
+              Text('Now', style: textTheme.bodyMedium),
+            ],
+          ),
+        ],
+      ),
     );
+  }
+
+  // "Buy price: 1.2k at the start, 1.3k now, highest 1.4k, lowest 1.1k."
+  String _describe(String name, double Function(BazaarPricePoint) priceOf) {
+    final prices = points.map(priceOf);
+    final highest = prices.reduce((a, b) => a > b ? a : b);
+    final lowest = prices.reduce((a, b) => a < b ? a : b);
+    return '$name price: ${Formatters.compact(prices.first)} at the start, '
+        '${Formatters.compact(prices.last)} now, '
+        'highest ${Formatters.compact(highest)}, '
+        'lowest ${Formatters.compact(lowest)}.';
   }
 }
 
