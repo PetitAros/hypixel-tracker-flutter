@@ -9,7 +9,8 @@ class SkillsSection extends StatelessWidget {
 
   final List<SkillProgress> skills;
 
-  static const _icons = {
+  // Also used for the collection categories that share a skill's name.
+  static const icons = {
     'Farming': Icons.agriculture,
     'Mining': Icons.hardware,
     'Combat': Icons.shield,
@@ -34,7 +35,7 @@ class SkillsSection extends StatelessWidget {
             for (final skill in skills)
               _SkillRow(
                 skill: skill,
-                icon: _icons[skill.name] ?? Icons.star_outline,
+                icon: icons[skill.name] ?? Icons.star_outline,
               ),
           ],
         ),

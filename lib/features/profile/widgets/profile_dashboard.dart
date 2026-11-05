@@ -27,7 +27,10 @@ class ProfileDashboard extends StatelessWidget {
         const _SectionTitle('Skills'),
         SkillsSection(skills: profile.skills),
         const _SectionTitle('Collections'),
-        CollectionsSection(collections: profile.collections),
+        CollectionsSection(
+          playerName: profile.player.name,
+          collections: profile.collections,
+        ),
       ],
     );
   }
