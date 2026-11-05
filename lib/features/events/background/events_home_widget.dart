@@ -1,13 +1,20 @@
 import 'package:home_widget/home_widget.dart';
 import 'package:hypixel_tracker/core/utils/formatters.dart';
+import 'package:hypixel_tracker/core/utils/skyblock_calendar.dart';
 import 'package:hypixel_tracker/domain/entities/skyblock_events.dart';
 
 // The Android home screen widget (EventsWidgetProvider.kt). Dart writes
-// ready-to-show lines; the Kotlin side only puts them in the layout.
+// ready-to-show lines; the Kotlin side only puts them in the layout, except
+// for the next event: Dart writes the next few with their times, and Kotlin
+// shows the first one not yet passed with a live countdown.
+// Redraws are scheduled at each of those times so it moves on by itself.
 class EventsHomeWidget {
   EventsHomeWidget._();
 
   static const _provider = 'io.lecomte.hypixel_tracker.EventsWidgetProvider';
+
+  // Enough to last until the next background sync, an hour later.
+  static const _nextCount = 10;
 
   static Future<void> update(SkyblockEvents events) async {
     final now = DateTime.now();
@@ -18,10 +25,23 @@ class EventsHomeWidget {
       'updated': Formatters.dateTime(events.fetchedAt),
     };
 
+    final next = events
+        .upcoming(now, calendar: SkyblockCalendar.events(now))
+        .take(_nextCount)
+        .toList();
+    // One "millis<TAB>label" per line, read by EventsWidgetProvider.kt.
+    lines['next_events'] = [
+      for (final event in next)
+        '${event.at.millisecondsSinceEpoch}\t${event.label}',
+    ].join('\n');
+
     for (final MapEntry(:key, :value) in lines.entries) {
       await HomeWidget.saveWidgetData<String>(key, value);
     }
     await HomeWidget.updateWidget(qualifiedAndroidName: _provider);
+    await HomeWidget.scheduleWidgetUpdates([
+      for (final event in next) event.at,
+    ], qualifiedAndroidName: _provider);
   }
 
   static Map<String, String> _mayorLines(SkyblockEvents events) {

@@ -33,6 +33,34 @@
             android:textSize="11sp" />
     </LinearLayout>
 
+    <!-- The next event, with a live countdown. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/events_next"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Next event"
+            android:textColor="#F4C430"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <Chronometer
+            android:id="@+id/events_next_countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textColor="#F4C430"
+            android:textSize="13sp" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/events_mayor"
         style="@style/EventsWidgetTitle"
