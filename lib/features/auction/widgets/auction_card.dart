@@ -38,7 +38,7 @@ class AuctionCard extends StatelessWidget {
                     Text(
                       auction.tier.replaceAll('_', ' '),
                       style: textTheme.bodyMedium?.copyWith(
-                        color: rarityColor(auction.tier),
+                        color: rarityColor(context, auction.tier),
                       ),
                     ),
                   ],

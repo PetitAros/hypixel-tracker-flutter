@@ -33,13 +33,13 @@ class CoflnetCredit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
-      color: AppColors.onSurfaceMuted,
+      color: context.palette.onSurfaceMuted,
       decoration: TextDecoration.underline,
-      decorationColor: AppColors.onSurfaceMuted,
+      decorationColor: context.palette.onSurfaceMuted,
     );
 
     return Material(
-      color: AppColors.surfaceVariant,
+      color: context.palette.surfaceVariant,
       child: InkWell(
         onTap: () => _openCoflnet(context, itemTag),
         child: SafeArea(
@@ -59,10 +59,10 @@ class CoflnetCredit extends StatelessWidget {
                   style: style,
                 ),
                 const SizedBox(width: AppSpacing.xs),
-                const Icon(
+                Icon(
                   Icons.open_in_new,
                   size: 14,
-                  color: AppColors.onSurfaceMuted,
+                  color: context.palette.onSurfaceMuted,
                 ),
               ],
             ),
@@ -81,7 +81,9 @@ class CoflnetCreditButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton.icon(
       onPressed: () => _openCoflnet(context, null),
-      style: TextButton.styleFrom(foregroundColor: AppColors.onSurfaceMuted),
+      style: TextButton.styleFrom(
+        foregroundColor: context.palette.onSurfaceMuted,
+      ),
       icon: const Icon(Icons.open_in_new, size: 14),
       iconAlignment: IconAlignment.end,
       label: const Text('Data by SkyCofl'),

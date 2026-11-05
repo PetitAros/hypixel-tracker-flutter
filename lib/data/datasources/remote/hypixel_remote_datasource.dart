@@ -1,8 +1,11 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:hypixel_tracker/data/models/skyblock_profile_model.dart';
 import 'package:hypixel_tracker/data/models/auction_model.dart';
 import 'package:hypixel_tracker/data/models/bazaar_item_model.dart';
+import 'package:hypixel_tracker/data/models/skyblock_events_model.dart';
+import 'package:hypixel_tracker/domain/entities/skyblock_events.dart';
 
 class HypixelApiException implements Exception {
   final String message;
@@ -26,8 +29,8 @@ class AuctionsResponse {
   });
 }
 
-// Keyless Hypixel endpoints only (bazaar, auctions, resources).
-// Player data needs a key and goes through the Worker, not this class.
+// Keyless Hypixel endpoints only (bazaar, auctions, resources, events).
+// Player data needs a key and goes through WorkerRemoteDatasource.
 class HypixelRemoteDatasource {
   final http.Client client;
 
@@ -89,6 +92,58 @@ class HypixelRemoteDatasource {
               .trim(),
       };
     });
+  }
+
+  /// Experience table of each skill, in Hypixel's order.
+  Future<List<SkillTableModel>> getSkillTables() {
+    return _get('resources/skyblock/skills', 'skills', (body) {
+      final skills = body['skills'] as Map<String, dynamic>;
+
+      return [
+        for (final MapEntry(key: id, :value) in skills.entries)
+          SkillTableModel.fromJson(id, value as Map<String, dynamic>),
+      ];
+    });
+  }
+
+  /// Tiers of each collection, grouped by category in Hypixel's order.
+  Future<List<CollectionTableModel>> getCollectionTables() {
+    return _get('resources/skyblock/collections', 'collections', (body) {
+      final groups = body['collections'] as Map<String, dynamic>;
+
+      return [
+        for (final group in groups.values)
+          for (final MapEntry(key: itemId, :value)
+              in (group['items'] as Map<String, dynamic>).entries)
+            CollectionTableModel.fromJson(
+              group['name'] as String,
+              itemId,
+              value as Map<String, dynamic>,
+            ),
+      ];
+    });
+  }
+
+  /// Announced and running fire sales.
+  Future<List<FireSaleModel>> getFireSales() {
+    return _get('skyblock/firesales', 'fire sales', (body) {
+      final sales = body['sales'] as List<dynamic>;
+
+      return sales.map((sale) => FireSaleModel.fromJson(sale)).toList();
+    });
+  }
+
+  Future<ElectionModel> getElection() {
+    return _get(
+      'resources/skyblock/election',
+      'election',
+      ElectionModel.fromJson,
+    );
+  }
+
+  /// The current or last Bingo event, null when the API has none.
+  Future<BingoEvent?> getBingo() {
+    return _get('resources/skyblock/bingo', 'bingo', BingoModel.fromJson);
   }
 
   Future<T> _get<T>(

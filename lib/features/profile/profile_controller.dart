@@ -25,6 +25,13 @@ class ProfileLoaded extends ProfileState {
   const ProfileLoaded(this.profile);
 }
 
+// The player exists but has no SkyBlock profile.
+class ProfileEmpty extends ProfileState {
+  final Player player;
+
+  const ProfileEmpty(this.player);
+}
+
 class ProfileFailed extends ProfileState {
   final Player player;
 
@@ -63,6 +70,9 @@ class ProfileController extends ChangeNotifier {
       final profile = await _repository.loadProfile(player);
       if (requestId != _requestId) return;
       _emit(ProfileLoaded(profile));
+    } on NoSkyBlockProfileException {
+      if (requestId != _requestId) return;
+      _emit(ProfileEmpty(player));
     } catch (_) {
       if (requestId != _requestId) return;
       _emit(ProfileFailed(player));

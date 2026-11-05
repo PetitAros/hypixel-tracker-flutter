@@ -91,7 +91,7 @@ class _AuctionSheetState extends State<AuctionSheet> {
             Text(
               auction.tier.replaceAll('_', ' '),
               style: textTheme.bodyLarge?.copyWith(
-                color: rarityColor(auction.tier),
+                color: rarityColor(context, auction.tier),
               ),
             ),
             const SizedBox(height: AppSpacing.sm),

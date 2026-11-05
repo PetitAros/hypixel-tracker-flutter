@@ -4,11 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:hypixel_tracker/core/theme/app_theme.dart';
 import 'package:hypixel_tracker/domain/repositories/auction_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/bazaar_repository.dart';
+import 'package:hypixel_tracker/domain/repositories/events_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/market_repository.dart';
 import 'package:hypixel_tracker/domain/repositories/player_repository.dart';
 import 'package:hypixel_tracker/features/auction/auctions_page.dart';
 import 'package:hypixel_tracker/features/bazaar/bazaar_page.dart';
+import 'package:hypixel_tracker/features/events/events_page.dart';
 import 'package:hypixel_tracker/features/profile/profile_page.dart';
+import 'package:hypixel_tracker/features/settings/settings_controller.dart';
+import 'package:hypixel_tracker/features/settings/settings_page.dart';
 
 // The main tabs, under a floating see-through navigation bar.
 class HomePage extends StatefulWidget {
@@ -16,21 +20,25 @@ class HomePage extends StatefulWidget {
     super.key,
     required this.auctionRepository,
     required this.bazaarRepository,
+    required this.eventsRepository,
     required this.marketRepository,
     required this.playerRepository,
+    required this.settingsController,
   });
 
   final AuctionRepository auctionRepository;
   final BazaarRepository bazaarRepository;
+  final EventsRepository eventsRepository;
   final MarketRepository marketRepository;
   final PlayerRepository playerRepository;
+  final SettingsController settingsController;
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  // The app opens on the profile, the middle tab.
+  // The app opens on the profile tab.
   static const _profileIndex = 1;
 
   int _index = _profileIndex;
@@ -54,6 +62,8 @@ class _HomePageState extends State<HomePage> {
             repository: widget.bazaarRepository,
             marketRepository: widget.marketRepository,
           ),
+          EventsPage(repository: widget.eventsRepository),
+          SettingsPage(controller: widget.settingsController),
         ],
       ),
       bottomNavigationBar: _FloatingNavigationBar(
@@ -76,6 +86,8 @@ class _FloatingNavigationBar extends StatelessWidget {
     (Icons.gavel, 'Auctions'),
     (Icons.person, 'Profile'),
     (Icons.storefront, 'Bazaar'),
+    (Icons.event, 'Events'),
+    (Icons.settings, 'Options'),
   ];
 
   static const _blur = 16.0;
@@ -97,12 +109,12 @@ class _FloatingNavigationBar extends StatelessWidget {
             filter: ImageFilter.blur(sigmaX: _blur, sigmaY: _blur),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant.withValues(
+                color: context.palette.surfaceVariant.withValues(
                   alpha: _backgroundOpacity,
                 ),
                 borderRadius: AppRadius.lg,
                 border: Border.all(
-                  color: AppColors.onBackground.withValues(
+                  color: context.palette.onBackground.withValues(
                     alpha: _borderOpacity,
                   ),
                 ),
@@ -159,9 +171,11 @@ class _TabButton extends StatelessWidget {
         style: IconButton.styleFrom(
           fixedSize: const Size.square(_size),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.md),
-          foregroundColor: selected ? AppColors.gold : AppColors.onSurfaceMuted,
+          foregroundColor: selected
+              ? context.palette.accent
+              : context.palette.onSurfaceMuted,
           backgroundColor: selected
-              ? AppColors.gold.withValues(alpha: _selectedOpacity)
+              ? context.palette.accent.withValues(alpha: _selectedOpacity)
               : Colors.transparent,
         ),
       ),

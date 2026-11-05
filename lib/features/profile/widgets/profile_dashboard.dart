@@ -27,7 +27,10 @@ class ProfileDashboard extends StatelessWidget {
         const _SectionTitle('Skills'),
         SkillsSection(skills: profile.skills),
         const _SectionTitle('Collections'),
-        CollectionsSection(collections: profile.collections),
+        CollectionsSection(
+          playerName: profile.player.name,
+          collections: profile.collections,
+        ),
       ],
     );
   }
@@ -73,8 +76,8 @@ class _Header extends StatelessWidget {
                 ],
               ),
             ),
-            // Nobody should mistake invented numbers for real ones.
-            if (profile.isDemo) const Chip(label: Text('Demo data')),
+            // The numbers may be out of date.
+            if (profile.fromCache) const Chip(label: Text('Offline')),
           ],
         ),
       ),

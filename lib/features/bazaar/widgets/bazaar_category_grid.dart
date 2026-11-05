@@ -32,6 +32,8 @@ class BazaarCategoryGrid extends StatelessWidget {
     BazaarCategory.oddities: ('BAZAAR_COOKIE', Icons.auto_awesome),
   };
 
+  static const _columns = 2;
+
   @override
   Widget build(BuildContext context) {
     final counts = <BazaarCategory, int>{};
@@ -45,8 +47,28 @@ class BazaarCategoryGrid extends StatelessWidget {
     // and scrolls under both.
     final inset = MediaQuery.paddingOf(context);
 
-    return GridView.count(
-      // Keeps pull-to-refresh working: the grid is shorter than the screen.
+    final cards = [
+      for (final category in BazaarCategory.values)
+        _CategoryCard(
+          label: category.label,
+          count: counts[category] ?? 0,
+          iconUrl: byId[_logos[category]!.$1]?.iconUrl,
+          fallback: _logos[category]!.$2,
+          onTap: () => onTap(category),
+        ),
+      _CategoryCard(
+        label: 'All items',
+        count: items.length,
+        iconUrl: null,
+        fallback: Icons.apps,
+        onTap: () => onTap(null),
+      ),
+    ];
+
+    // Rows of two cards as tall as their content, rather than a grid with a
+    // fixed aspect ratio: that overflowed on narrow screens and large fonts.
+    return ListView(
+      // Keeps pull-to-refresh working: the list is shorter than the screen.
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -54,26 +76,24 @@ class BazaarCategoryGrid extends StatelessWidget {
         AppSpacing.md,
         inset.bottom + AppSpacing.sm,
       ),
-      crossAxisCount: 2,
-      mainAxisSpacing: AppSpacing.md,
-      crossAxisSpacing: AppSpacing.md,
-      childAspectRatio: 1.25,
       children: [
-        for (final category in BazaarCategory.values)
-          _CategoryCard(
-            label: category.label,
-            count: counts[category] ?? 0,
-            iconUrl: byId[_logos[category]!.$1]?.iconUrl,
-            fallback: _logos[category]!.$2,
-            onTap: () => onTap(category),
+        for (var i = 0; i < cards.length; i += _columns)
+          Padding(
+            padding: EdgeInsets.only(top: i == 0 ? 0 : AppSpacing.md),
+            // Both cards of a row take the height of the taller one.
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: AppSpacing.md,
+                children: [
+                  for (var j = i; j < i + _columns; j++)
+                    Expanded(
+                      child: j < cards.length ? cards[j] : const SizedBox(),
+                    ),
+                ],
+              ),
+            ),
           ),
-        _CategoryCard(
-          label: 'All items',
-          count: items.length,
-          iconUrl: null,
-          fallback: Icons.apps,
-          onTap: () => onTap(null),
-        ),
       ],
     );
   }

@@ -9,7 +9,8 @@ class SkillsSection extends StatelessWidget {
 
   final List<SkillProgress> skills;
 
-  static const _icons = {
+  // Also used for the collection categories that share a skill's name.
+  static const icons = {
     'Farming': Icons.agriculture,
     'Mining': Icons.hardware,
     'Combat': Icons.shield,
@@ -34,7 +35,7 @@ class SkillsSection extends StatelessWidget {
             for (final skill in skills)
               _SkillRow(
                 skill: skill,
-                icon: _icons[skill.name] ?? Icons.star_outline,
+                icon: icons[skill.name] ?? Icons.star_outline,
               ),
           ],
         ),
@@ -58,7 +59,12 @@ class _SkillRow extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(icon, color: maxed ? AppColors.gold : AppColors.onSurfaceMuted),
+        Icon(
+          icon,
+          color: maxed
+              ? context.palette.accent
+              : context.palette.onSurfaceMuted,
+        ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(
@@ -82,7 +88,7 @@ class _SkillRow extends StatelessWidget {
                 value: skill.progress,
                 minHeight: _barHeight,
                 borderRadius: AppRadius.sm,
-                backgroundColor: AppColors.surface,
+                backgroundColor: context.palette.surface,
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(

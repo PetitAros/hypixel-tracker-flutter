@@ -69,9 +69,9 @@ class FadingAppBar extends StatelessWidget implements PreferredSizeWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.background,
-              AppColors.background,
-              AppColors.background.withValues(alpha: 0),
+              context.palette.background,
+              context.palette.background,
+              context.palette.background.withValues(alpha: 0),
             ],
             stops: [0, 1 - _fadeHeight / totalHeight, 1],
           ),
