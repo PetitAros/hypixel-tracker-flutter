@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:hypixel_tracker/core/theme/app_theme.dart';
 import 'package:hypixel_tracker/domain/entities/player_profiles.dart';
+import 'package:hypixel_tracker/domain/repositories/player_repository.dart';
 import 'package:hypixel_tracker/features/profile/widgets/collections_section.dart';
-import 'package:hypixel_tracker/features/profile/widgets/player_head.dart';
+import 'package:hypixel_tracker/features/profile/widgets/player_model.dart';
 import 'package:hypixel_tracker/features/profile/widgets/skills_section.dart';
 
 // The followed player's progress: who they are, their skills, their
 // collections.
 class ProfileDashboard extends StatelessWidget {
-  const ProfileDashboard({super.key, required this.profile});
+  const ProfileDashboard({
+    super.key,
+    required this.profile,
+    required this.repository,
+  });
 
   final PlayerProfile profile;
+  final PlayerRepository repository; // for the skin
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +29,7 @@ class ProfileDashboard extends StatelessWidget {
         bottom: inset.bottom + AppSpacing.sm,
       ),
       children: [
-        _Header(profile: profile),
+        _Header(profile: profile, repository: repository),
         const _SectionTitle('Skills'),
         SkillsSection(skills: profile.skills),
         const _SectionTitle('Collections'),
@@ -37,9 +43,10 @@ class ProfileDashboard extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.profile});
+  const _Header({required this.profile, required this.repository});
 
   final PlayerProfile profile;
+  final PlayerRepository repository;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +57,7 @@ class _Header extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: [
-            PlayerHead(uuid: profile.player.uuid),
+            PlayerModel(player: profile.player, repository: repository),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(

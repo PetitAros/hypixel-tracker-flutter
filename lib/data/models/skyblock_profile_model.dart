@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:hypixel_tracker/data/models/forge_durations.dart';
 import 'package:hypixel_tracker/domain/entities/player_profiles.dart';
 
 // The SkyBlock profile a player last played on, reduced to what the app shows.
@@ -14,13 +15,23 @@ class SkyblockProfileModel {
   /// Empty when the player turned their collections API off.
   final Map<String, int> collection;
 
+  /// What is in the forge, in slot order. Empty when it is idle.
+  final List<ForgeProcessModel> forge;
+
+  /// The Heart of the Mountain perk that shortens every forge. 0 if not
+  /// unlocked.
+  final int quickForgeLevel;
+
   const SkyblockProfileModel({
     required this.cuteName,
     required this.experience,
     required this.collection,
+    required this.forge,
+    required this.quickForgeLevel,
   });
 
   static const _skillPrefix = 'SKILL_';
+  static const _quickForgeNode = 'forge_time';
 
   /// [profile] is one entry of the Hypixel `profiles` list; [uuid] picks the
   /// player among its members (coop profiles have several).
@@ -32,6 +43,13 @@ class SkyblockProfileModel {
     final experience =
         member['player_data']?['experience'] as Map<String, dynamic>? ?? {};
     final collection = member['collection'] as Map<String, dynamic>? ?? {};
+    // One map per forge, "forge_1", then one entry per busy slot.
+    final forges =
+        member['forge']?['forge_processes'] as Map<String, dynamic>? ?? {};
+    // The perk tree moved in the API over time: read both places.
+    final quickForge =
+        member['skill_tree']?['nodes']?['mining']?[_quickForgeNode] ??
+        member['mining_core']?['nodes']?[_quickForgeNode];
 
     return SkyblockProfileModel(
       cuteName: profile['cute_name'] as String,
@@ -44,8 +62,56 @@ class SkyblockProfileModel {
         for (final MapEntry(:key, :value) in collection.entries)
           key: (value as num).toInt(),
       },
+      forge: [
+        for (final slots in forges.values)
+          for (final process in (slots as Map<String, dynamic>).values)
+            ForgeProcessModel.fromJson(process as Map<String, dynamic>),
+      ]..sort((a, b) => a.slot.compareTo(b.slot)),
+      quickForgeLevel: quickForge is num ? quickForge.toInt() : 0,
     );
   }
+}
+
+// One item being forged, from the profile's `forge_processes`.
+class ForgeProcessModel {
+  final String itemId; // e.g. "REFINED_DIAMOND"
+  final int slot; // from 1
+  final int startTime; // epoch milliseconds
+
+  const ForgeProcessModel({
+    required this.itemId,
+    required this.slot,
+    required this.startTime,
+  });
+
+  factory ForgeProcessModel.fromJson(Map<String, dynamic> json) {
+    return ForgeProcessModel(
+      itemId: json['id'] as String,
+      slot: (json['slot'] as num).toInt(),
+      startTime: (json['startTime'] as num).toInt(),
+    );
+  }
+
+  ForgeSlot toEntity({required int quickForgeLevel, required String iconUrl}) {
+    final startedAt = DateTime.fromMillisecondsSinceEpoch(startTime);
+    final duration = ForgeDurations.of(
+      itemId,
+      quickForgeLevel: quickForgeLevel,
+    );
+    return ForgeSlot(
+      slot: slot,
+      itemName: _nameOf(itemId),
+      iconUrl: iconUrl,
+      startedAt: startedAt,
+      readyAt: duration == null ? null : startedAt.add(duration),
+    );
+  }
+
+  // "PERFECT_RUBY_GEM" -> "Perfect Ruby Gem"
+  static String _nameOf(String itemId) => itemId
+      .split('_')
+      .map((word) => word[0] + word.substring(1).toLowerCase())
+      .join(' ');
 }
 
 // How much experience each level of a skill costs, from resources/skyblock/skills.

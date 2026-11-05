@@ -1,4 +1,5 @@
 import 'package:hypixel_tracker/domain/entities/player.dart';
+import 'package:hypixel_tracker/domain/entities/player_skin.dart';
 
 abstract interface class PlayerRepository {
   /// The account with exactly this username (case does not matter),
@@ -10,4 +11,8 @@ abstract interface class PlayerRepository {
 
   /// Remembers [player] as the followed player; null forgets them.
   Future<void> saveFollowed(Player? player);
+
+  /// The skin [player] wears, null for the default one. Throws when the
+  /// network fails.
+  Future<PlayerSkin?> loadSkin(Player player);
 }

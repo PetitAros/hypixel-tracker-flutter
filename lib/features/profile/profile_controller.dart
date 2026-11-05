@@ -62,9 +62,25 @@ class ProfileController extends ChangeNotifier {
   Future<void> select(Player player) async {
     _players.saveFollowed(player);
 
+    _emit(ProfileLoading(player));
+    await _load(player);
+  }
+
+  /// Loads the followed player's progress again, e.g. for the forge on the
+  /// events tab. What is shown stays until the new copy arrives.
+  Future<void> refresh() async {
+    final player = switch (_state) {
+      ProfileLoaded(:final profile) => profile.player,
+      ProfileEmpty(:final player) || ProfileFailed(:final player) => player,
+      // Nobody followed, or a load is already under way.
+      ProfileNone() || ProfileLoading() => null,
+    };
+    if (player != null) await _load(player, keepOnError: true);
+  }
+
+  Future<void> _load(Player player, {bool keepOnError = false}) async {
     // A late response must never overwrite a newer one.
     final requestId = ++_requestId;
-    _emit(ProfileLoading(player));
 
     try {
       final profile = await _repository.loadProfile(player);
@@ -75,6 +91,8 @@ class ProfileController extends ChangeNotifier {
       _emit(ProfileEmpty(player));
     } catch (_) {
       if (requestId != _requestId) return;
+      // A failed refresh keeps the profile already on screen.
+      if (keepOnError && _state is ProfileLoaded) return;
       _emit(ProfileFailed(player));
     }
   }
@@ -103,6 +121,13 @@ class ProfileScope extends InheritedNotifier<ProfileController> {
 
   static ProfileController of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<ProfileScope>();
+    assert(scope != null, 'No ProfileScope above this widget');
+    return scope!.notifier!;
+  }
+
+  /// Like [of], without rebuilding the caller: for callbacks.
+  static ProfileController read(BuildContext context) {
+    final scope = context.getInheritedWidgetOfExactType<ProfileScope>();
     assert(scope != null, 'No ProfileScope above this widget');
     return scope!.notifier!;
   }

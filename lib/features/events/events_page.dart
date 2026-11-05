@@ -11,9 +11,12 @@ import 'package:hypixel_tracker/core/widgets/state_message.dart';
 import 'package:hypixel_tracker/domain/entities/skyblock_events.dart';
 import 'package:hypixel_tracker/domain/repositories/events_repository.dart';
 import 'package:hypixel_tracker/features/events/events_controller.dart';
+import 'package:hypixel_tracker/features/events/widgets/forge_card.dart';
+import 'package:hypixel_tracker/features/profile/profile_controller.dart';
 
-// The events tab: mayor and election, Bingo, fire sales. Loading it also
-// refreshes the home screen widget and the scheduled alerts.
+// The events tab: mayor and election, Bingo, fire sales, and the followed
+// player's forge. Loading it also refreshes the home screen widget and the
+// scheduled alerts.
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key, required this.repository});
 
@@ -36,6 +39,11 @@ class _EventsPageState extends State<EventsPage> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  // The forge card comes from the profile: refresh it with the events.
+  Future<void> _refresh() async {
+    await (_controller.load(), ProfileScope.read(context).refresh()).wait;
   }
 
   @override
@@ -65,7 +73,7 @@ class _EventsPageState extends State<EventsPage> {
               onRetry: _controller.load,
             ),
             EventsLoaded(:final events) => RefreshIndicator(
-              onRefresh: _controller.load,
+              onRefresh: _refresh,
               child: _EventsList(events: events),
             ),
           },
@@ -95,6 +103,7 @@ class _EventsList extends StatelessWidget {
       ),
       children: [
         _NextEventCard(events: events),
+        const ForgeCard(),
         const _CalendarCard(),
         _MayorCard(events: events),
         if (bingo != null) _BingoCard(bingo: bingo),

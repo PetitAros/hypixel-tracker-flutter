@@ -51,7 +51,7 @@ class ProfilePage extends StatelessWidget {
       ProfileLoaded(profile: final loaded) => _FollowedPlayerScaffold(
         player: loaded.player,
         onChange: profile.clear,
-        body: ProfileDashboard(profile: loaded),
+        body: ProfileDashboard(profile: loaded, repository: repository),
       ),
     };
   }
