@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:hypixel_tracker/core/utils/formatters.dart';
@@ -17,7 +19,9 @@ class EventsNotifier {
     android: AndroidNotificationDetails(
       'skyblock_events',
       'SkyBlock events',
-      channelDescription: 'Fire sales, mayor elections and Bingo',
+      channelDescription: 'Fire sales, mayor elections, Bingo and festivals',
+      // The app icon's gold, behind the white status bar icon.
+      color: Color(0xFFFFAA00),
     ),
   );
 
@@ -38,7 +42,8 @@ class EventsNotifier {
   static Future<void> initialize() async {
     await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        // White silhouette of the app icon (res/drawable-*/ic_notification).
+        android: AndroidInitializationSettings('ic_notification'),
       ),
     );
   }

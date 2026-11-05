@@ -95,6 +95,7 @@ class _SettingsList extends StatelessWidget {
         // Alerts are Android only, like the background sync behind them.
         if (defaultTargetPlatform == TargetPlatform.android)
           const _SettingCard(title: 'Notifications', child: _AlertsSetting()),
+        const _AboutCard(),
       ],
     );
   }
@@ -213,6 +214,52 @@ class _AlertsSettingState extends State<_AlertsSetting> {
             label: const Text('Turn on alerts'),
           ),
       ],
+    );
+  }
+}
+
+// The app icon and name, with the disclaimer the stores expect from a fan
+// app.
+class _AboutCard extends StatelessWidget {
+  const _AboutCard();
+
+  static const _iconSize = 64.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: AppRadius.md,
+              child: Image.asset(
+                'assets/icon/app_icon_256.png',
+                width: _iconSize,
+                height: _iconSize,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Hypixel Tracker', style: textTheme.titleMedium),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Not affiliated with or endorsed by Hypixel Inc. '
+                    'or Mojang.',
+                    style: textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
